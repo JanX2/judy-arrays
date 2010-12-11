@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3DB3623612B379AA0036C0E1 /* judy3.c in Sources */ = {isa = PBXBuildFile; fileRef = 3DB3623512B379AA0036C0E1 /* judy3.c */; };
-		8DD76FB00486AB0100D96B5E /* judy3.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = C6A0FF2C0290799A04C91782 /* judy3.1 */; };
+		3DB3623612B379AA0036C0E1 /* judy-arrays.c in Sources */ = {isa = PBXBuildFile; fileRef = 3DB3623512B379AA0036C0E1 /* judy-arrays.c */; };
+		8DD76FB00486AB0100D96B5E /* judy-arrays.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = C6A0FF2C0290799A04C91782 /* judy-arrays.1 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -18,16 +18,16 @@
 			dstPath = /usr/share/man/man1/;
 			dstSubfolderSpec = 0;
 			files = (
-				8DD76FB00486AB0100D96B5E /* judy3.1 in CopyFiles */,
+				8DD76FB00486AB0100D96B5E /* judy-arrays.1 in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		3DB3623512B379AA0036C0E1 /* judy3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = judy3.c; sourceTree = "<group>"; };
-		8DD76FB20486AB0100D96B5E /* judy3 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = judy3; sourceTree = BUILT_PRODUCTS_DIR; };
-		C6A0FF2C0290799A04C91782 /* judy3.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = judy3.1; sourceTree = "<group>"; };
+		3DB3623512B379AA0036C0E1 /* judy-arrays.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = judy-arrays.c; sourceTree = "<group>"; };
+		8DD76FB20486AB0100D96B5E /* judy-arrays */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = judy-arrays; sourceTree = BUILT_PRODUCTS_DIR; };
+		C6A0FF2C0290799A04C91782 /* judy-arrays.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = judy-arrays.1; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,20 +41,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		08FB7794FE84155DC02AAC07 /* judy3 */ = {
+		08FB7794FE84155DC02AAC07 /* judy-arrays */ = {
 			isa = PBXGroup;
 			children = (
 				08FB7795FE84155DC02AAC07 /* Source */,
 				C6A0FF2B0290797F04C91782 /* Documentation */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
 			);
-			name = judy3;
+			name = judy-arrays;
 			sourceTree = "<group>";
 		};
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				3DB3623512B379AA0036C0E1 /* judy3.c */,
+				3DB3623512B379AA0036C0E1 /* judy-arrays.c */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -62,7 +62,7 @@
 		1AB674ADFE9D54B511CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8DD76FB20486AB0100D96B5E /* judy3 */,
+				8DD76FB20486AB0100D96B5E /* judy-arrays */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,7 +70,7 @@
 		C6A0FF2B0290797F04C91782 /* Documentation */ = {
 			isa = PBXGroup;
 			children = (
-				C6A0FF2C0290799A04C91782 /* judy3.1 */,
+				C6A0FF2C0290799A04C91782 /* judy-arrays.1 */,
 			);
 			name = Documentation;
 			sourceTree = "<group>";
@@ -78,9 +78,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8DD76FA90486AB0100D96B5E /* judy3 */ = {
+		8DD76FA90486AB0100D96B5E /* judy-arrays */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1DEB928508733DD80010E9CD /* Build configuration list for PBXNativeTarget "judy3" */;
+			buildConfigurationList = 1DEB928508733DD80010E9CD /* Build configuration list for PBXNativeTarget "judy-arrays" */;
 			buildPhases = (
 				8DD76FAB0486AB0100D96B5E /* Sources */,
 				8DD76FAD0486AB0100D96B5E /* Frameworks */,
@@ -90,10 +90,10 @@
 			);
 			dependencies = (
 			);
-			name = judy3;
+			name = judy-arrays;
 			productInstallPath = "$(HOME)/bin";
-			productName = judy3;
-			productReference = 8DD76FB20486AB0100D96B5E /* judy3 */;
+			productName = judy-arrays;
+			productReference = 8DD76FB20486AB0100D96B5E /* judy-arrays */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -101,7 +101,7 @@
 /* Begin PBXProject section */
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
-			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "judy3" */;
+			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "judy-arrays" */;
 			compatibilityVersion = "Xcode 3.1";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
@@ -111,11 +111,11 @@
 				French,
 				German,
 			);
-			mainGroup = 08FB7794FE84155DC02AAC07 /* judy3 */;
+			mainGroup = 08FB7794FE84155DC02AAC07 /* judy-arrays */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8DD76FA90486AB0100D96B5E /* judy3 */,
+				8DD76FA90486AB0100D96B5E /* judy-arrays */,
 			);
 		};
 /* End PBXProject section */
@@ -125,7 +125,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3DB3623612B379AA0036C0E1 /* judy3.c in Sources */,
+				3DB3623612B379AA0036C0E1 /* judy-arrays.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -143,7 +143,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = "";
 				INSTALL_PATH = /usr/local/bin;
-				PRODUCT_NAME = judy3;
+				PRODUCT_NAME = judy-arrays;
 			};
 			name = Debug;
 		};
@@ -155,7 +155,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PREPROCESSOR_DEFINITIONS = "";
 				INSTALL_PATH = /usr/local/bin;
-				PRODUCT_NAME = judy3;
+				PRODUCT_NAME = judy-arrays;
 			};
 			name = Release;
 		};
@@ -190,7 +190,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1DEB928508733DD80010E9CD /* Build configuration list for PBXNativeTarget "judy3" */ = {
+		1DEB928508733DD80010E9CD /* Build configuration list for PBXNativeTarget "judy-arrays" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB928608733DD80010E9CD /* Debug */,
@@ -199,7 +199,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "judy3" */ = {
+		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "judy-arrays" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB928A08733DD80010E9CD /* Debug */,
