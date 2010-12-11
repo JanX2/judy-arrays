@@ -24,7 +24,9 @@
 //	judy_del:	delete the key and cell for the most recent judy query.
 
 #include <stdlib.h>
-#include <malloc.h>
+#ifdef HAVE_MALLOC_H
+	#include <malloc.h>
+#endif
 #include <memory.h>
 
 typedef unsigned short ushort;
@@ -42,12 +44,12 @@ void judy_abort (char *msg)
 	exit(1);
 }
 
-#ifdef unix
+#if !defined(WIN32)
 void vfree (void *what, uint size)
 {
 	free (what);
 }
-#else
+#elif defined(WIN32)
 #include <windows.h>
 
 void *valloc (uint size)
@@ -114,7 +116,7 @@ JudySeg *seg;
 Judy *judy;
 uint amt;
 
-	if( seg = valloc (JUDY_seg) )
+	if( ((seg = valloc(JUDY_seg))) )
 		seg->next = JUDY_seg;
 	else
 		judy_abort ("No virtual memory");
@@ -136,7 +138,7 @@ void judy_close (Judy *judy)
 {
 JudySeg *seg, *nxt = judy->seg;
 
-	while( seg = nxt )
+	while( (seg = nxt) )
 		nxt = seg->seg, vfree (seg, JUDY_seg);
 }
 
@@ -152,7 +154,7 @@ JudySeg *seg;
 	case JUDY_8:
 		amt = 8;
 
-		if( block = judy->judy8 ) {
+		if( (block = judy->judy8) ) {
 			judy->judy8 = *block;
 			memset (block, 0, amt);
 			return (void *)block;
@@ -162,7 +164,7 @@ JudySeg *seg;
 	case JUDY_16:
 		amt = 16;
 
-		if( block = judy->judy16 ) {
+		if( (block = judy->judy16) ) {
 			judy->judy16 = *block;
 			memset (block, 0, amt);
 			return (void *)block;
@@ -173,7 +175,7 @@ JudySeg *seg;
 	case JUDY_32:
 		amt = 32;
 
-		if( block = judy->judy32 ) {
+		if( (block = judy->judy32) ) {
 			judy->judy32 = *block;
 			memset (block, 0, amt);
 			return (void *)block;
@@ -183,7 +185,7 @@ JudySeg *seg;
 	case JUDY_64:
 		amt = 64;
 
-		if( block = judy->judy64 ) {
+		if( (block = judy->judy64) ) {
 			judy->judy64 = *block;
 			memset (block, 0, amt);
 			return (void *)block;
@@ -193,7 +195,7 @@ JudySeg *seg;
 	case JUDY_128:
 		amt = 128;
 
-		if( block = judy->judy128 ) {
+		if( (block = judy->judy128) ) {
 			judy->judy128 = *block;
 			memset (block, 0, amt);
 			return (void *)block;
@@ -203,7 +205,7 @@ JudySeg *seg;
 	case JUDY_256:
 		amt = 256;
 
-		if( block = judy->judy256 ) {
+		if( (block = judy->judy256) ) {
 			judy->judy256 = *block;
 			memset (block, 0, amt);
 			return (void *)block;
@@ -213,7 +215,7 @@ JudySeg *seg;
 	case JUDY_radix:
 		amt = 16 * sizeof(uint *);
 
-		if( block = judy->judyradix ) {
+		if( (block = judy->judyradix) ) {
 			judy->judyradix = *block;
 			memset (block, 0, amt);
 			return (void *)block;
@@ -222,7 +224,7 @@ JudySeg *seg;
 	}
 
 	if( !judy->seg || judy->seg->next < amt + sizeof(*seg) ) {
-		if( seg = valloc (JUDY_seg) )
+		if( (seg = valloc (JUDY_seg)) )
 			seg->next = JUDY_seg, seg->seg = judy->seg, judy->seg = seg;
 		else
 			judy_abort("Out of virtual memory");
@@ -247,7 +249,7 @@ void *block;
 		amt |= 0x7, amt += 1;
 
 	if( !judy->seg || judy->seg->next < amt + sizeof(*seg) ) {
-		if( seg = valloc (JUDY_seg) )
+		if( (seg = valloc (JUDY_seg)) )
 			seg->next = JUDY_seg, seg->seg = judy->seg, judy->seg = seg;
 		else
 			judy_abort("Out of virtual memory");
@@ -475,7 +477,7 @@ int cnt;
 
 			judy->stack[judy->level].slot = slot;
 
-			if( next = table[slot >> 4] )
+			if( (next = table[slot >> 4]) )
 				table = (uint  *)(next & 0xfffffff8); // inner radix
 			else
 				return 0;
@@ -493,7 +495,8 @@ int cnt;
 			cnt = test = 32 - sizeof(uint);
 			if( test > max - off )
 				test = max - off;
-			value = strncmp (base, buff + off, test);
+			value = strncmp((const char *)base, (const char *)(buff + off), test);
+				
 			if( !value && test < cnt && !base[test] ) // leaf?
 				return &node[-1];
 
@@ -571,7 +574,7 @@ uint *table;
 
 	//	if necessary, setup inner radix node
 
-	if( !(table = (uint *)(radix[key >> 4] & 0xfffffff8)) ) {
+	if( (!(table = (uint *)(radix[key >> 4] & 0xfffffff8))) ) {
 		table = judy_alloc (judy, JUDY_radix);
 		radix[key >> 4] = (uint)table | JUDY_radix;
 	}
@@ -695,8 +698,8 @@ uint *node;
 		case JUDY_radix:
 			table = (uint *)(next & 0xfffffff8);
 			for( slot = 0; slot < 256; slot++ )
-			  if( inner = (uint *)(table[slot >> 4] & 0xfffffff8) ) {
-				if( next = inner[slot & 0xf] ) {
+			  if( (inner = (uint *)(table[slot >> 4] & 0xfffffff8)) ) {
+				if( (next = inner[slot & 0xf]) ) {
 				  judy->stack[judy->level].slot = slot;
 				  if( !slot )
 					return &inner[slot & 0xf];
@@ -763,8 +766,8 @@ uint *node;
 		case JUDY_radix:
 			table = (uint *)(next & 0xfffffff8);
 			for( slot = 256; slot--; ) {
-			  if( inner = (uint *)(table[slot >> 4] & 0xfffffff8) ) {
-				if( next = inner[slot & 0xf] )
+			  if( (inner = (uint *)(table[slot >> 4] & 0xfffffff8)) ) {
+				if( (next = inner[slot & 0xf]) )
 				  if( !slot )
 					return &inner[0];
 				  else
@@ -794,7 +797,7 @@ uint *judy_nxt (Judy *judy)
 {
 int slot, size, cnt;
 uint *table, *inner;
-uint idx = 0;
+//uint idx = 0;
 uint keysize;
 uchar *base;
 uint *node;
@@ -839,7 +842,7 @@ uint off;
 			table = (uint *)(next & 0xfffffff8);
 
 			while( ++slot < 256 )
-			  if( inner = (uint *)(table[slot >> 4] & 0xfffffff8) ) {
+			  if( (inner = (uint *)(table[slot >> 4] & 0xfffffff8)) ) {
 				if( inner[slot & 0xf] ) {
 				  judy->stack[judy->level].slot = slot;
 				  return judy_first(judy, inner[slot & 0xf], off + 1);
@@ -863,7 +866,7 @@ uint *judy_prv (Judy *judy)
 {
 int slot, size, keysize;
 uint *table, *inner;
-uint idx = 0;
+//uint idx = 0;
 uchar *base;
 uint *node;
 uint next;
@@ -904,7 +907,7 @@ uint off;
 			table = (uint *)(next & 0xfffffff8);
 
 			while( slot-- )
-			  if( inner = (uint *)(table[slot >> 4] & 0xfffffff8) )
+			  if( (inner = (uint *)(table[slot >> 4] & 0xfffffff8)) )
 				if( inner[slot & 0xf] )
 				  if( slot )
 				    return judy_last(judy, inner[slot & 0xf], off + 1);
@@ -1002,7 +1005,7 @@ uint *judy_strt (Judy *judy, uchar *buff, uint max)
 {
 uint *cell;
 
-	if( cell = judy_slot (judy, buff, max) )
+	if( (cell = judy_slot (judy, buff, max)) )
 		return cell;
 
 	return judy_nxt (judy);
@@ -1201,7 +1204,7 @@ uint *node;
 			if( test > max - off )
 				test = max - off;
 
-			value = strncmp (base, buff + off, test);
+			value = strncmp((const char *)base, (const char *)(buff + off), test);
 
 			if( !value && test < cnt && !base[test] ) // leaf?
 				return &node[-1];
@@ -1263,7 +1266,7 @@ int main (int argc, char **argv)
 {
 uchar buff[1024];
 FILE *in, *out;
-uint max = 0;
+//uint max = 0;
 void *judy;
 uint *cell;
 uint len;
@@ -1287,8 +1290,8 @@ uint idx;
 
 	judy = judy_open (512);
 
-	while( fgets(buff, sizeof(buff), in) ) {
-		len = strlen(buff);
+	while( fgets((char *)buff, sizeof(buff), in) ) {
+		len = strlen((const char *)buff);
 		buff[--len] = 0;
 		if( len && buff[len - 1] == 0xd )
 			buff[--len] = 0;
@@ -1301,7 +1304,7 @@ uint idx;
 		len = judy_key (judy, buff, sizeof(buff));
 		for( idx = 0; idx < *cell; idx++ )		// spit out duplicates
 			fprintf(out, "%s\n", buff);
-	} while( cell = judy_nxt (judy) );
+	} while( (cell = judy_nxt (judy)) );
 
 	fprintf(stderr, "%d memory used\n", MaxMem);
 
