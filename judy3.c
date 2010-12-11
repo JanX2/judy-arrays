@@ -89,8 +89,8 @@ typedef struct {
 
 typedef struct {
 	uint next;			// judy object
-	ushort off;			// offset within key
-	ushort slot;		// slot within object
+	uint off;			// offset within key
+	int slot;			// slot within object
 } JudyStack;
 
 typedef struct {
@@ -361,12 +361,12 @@ int keysize;
 
 uint *judy_slot (Judy *judy, uchar *buff, uint max)
 {
-int slot, size, keysize;
+int slot, size, keysize, tst;
 uint next = *judy->root;
-uint value, prev, test;
 uint off = 0/*, start*/;
 ushort *judyushort;
 uchar *judyuchar;
+uint value, test;
 uint *judyuint;
 uchar *base;
 uint *table;
@@ -401,8 +401,8 @@ int cnt;
 			node = (uint *)((next & ~(uint)0x7) + size);
 			cnt = size / (sizeof(uint) + keysize);
 			//start = off;
+			slot = cnt;
 			value = 0;
-			prev = 0;
 
 			do {
 				value <<= 8;
@@ -415,54 +415,50 @@ int cnt;
 			switch( keysize ) {
 			case 4:			// 4 byte keys
 				judyuint = (uint *)(next & ~(uint)0x7);
-				for( slot = 0; slot < cnt; slot++ )
-					if( judyuint[slot] > value )
+				while( slot-- )
+					if( test = judyuint[slot], test <= value )
 						break;
-					else
-						prev = judyuint[slot];
+
 				break;
 
 			case 3:			// 3 byte keys
-				judyuchar = (uchar *)(next & ~(uint)0x7);
-				for( slot = 0; slot < cnt; slot++ ) {
-					test = *judyuchar++;
-					test |= *judyuchar++ << 8;
-					test |= *judyuchar++ << 16;
-					if( test > value )
+				judyuchar = (uchar *)(next & ~(uint)0x7) + cnt * keysize;
+				while( slot-- ) {
+					test = *--judyuchar << 16;
+					test |= *--judyuchar << 8;
+					test |= *--judyuchar;
+					if( test <= value )
 						break;
-					else
-						prev = test;
 				}
+
 				break;
 
 			case 2:			// 2 byte keys
 				judyushort = (ushort *)(next & ~(uint)0x7);
-				for( slot = 0; slot < cnt; slot++ )
-					if( judyushort[slot] > value )
+				while( slot-- )
+					if( test = judyushort[slot], test <= value )
 						break;
-					else
-						prev = judyushort[slot];
+
 				break;
 
 			case 1:			// 1 byte keys
 				judyuchar = (uchar *)(next & ~(uint)0x7);
-				for( slot = 0; slot < cnt; slot++ )
-					if( judyuchar[slot] > value )
+				while( slot-- )
+					if( test = judyuchar[slot], test <= value )
 						break;
-					else
-						prev = judyuchar[slot];
 				break;
 			}
 
-			if( slot && prev == value ) {
-				judy->stack[judy->level].slot = slot - 1;
+			judy->stack[judy->level].slot = slot;
+
+			if( test == value ) {
 
 				// is this a leaf?
 
 				if( !(value & 0xff) )
-					return &node[-slot];
+					return &node[-slot-1];
 
-				next = node[-slot];
+				next = node[-slot-1];
 				continue;
 			}
 
@@ -495,15 +491,14 @@ int cnt;
 		case JUDY_span:
 			node = (uint *)((next & ~(uint)0x7) + JUDY_BASE_SIZE);
 			base = (uchar *)(next & ~(uint)0x7);
-			cnt = test = JUDY_BASE_SIZE - sizeof(uint);
-			if( test > max - off )
-				test = max - off;
-			value = strncmp((const char *)base, (const char *)(buff + off), test);
-				
-			if( !value && test < cnt && !base[test] ) // leaf?
+			cnt = tst = JUDY_BASE_SIZE - sizeof(uint);
+			if( tst > (int)(max - off) )
+				tst = max - off;
+			value = strncmp((const char *)base, (const char *)(buff + off), tst);
+			if( !value && tst < cnt && !base[tst] ) // leaf?
 				return &node[-1];
 
-			if( !value && test == cnt ) {
+			if( !value && tst == cnt ) {
 				next = node[-1];
 				off += cnt;
 				continue;
@@ -556,8 +551,6 @@ uint type;
 	for( ; slot < oldcnt; slot++ )
 		newnode[-(slot + newcnt - oldcnt + 1)] = node[-(slot + 1)];	// copy ptr
 
-	judy->stack[judy->level].next = *next;
-	judy->stack[judy->level].slot = idx + newcnt - oldcnt - 1;
 	judy_free (judy, (void **)base, type - 1);
 	return result;
 }
@@ -1045,12 +1038,12 @@ uint off = 0;
 
 uint *judy_cell (Judy *judy, uchar *buff, uint max)
 {
-int size, idx, slot, cnt;
+int size, idx, slot, cnt, tst;
 uchar *base, *judyuchar;
 uint *next = judy->root;
-uint test, prev, value;
 uint off = 0, start;
 ushort *judyushort;
+uint test, value;
 uint *judyuint;
 uint keysize;
 uint *table;
@@ -1078,8 +1071,8 @@ uint *node;
 			base = (uchar *)(*next & ~(uint)0x7);
 			node = (uint *)((*next & ~(uint)0x7) + size);
 			start = off;
+			slot = cnt;
 			value = 0;
-			prev = 0;
 
 			do {
 				value <<= 8;
@@ -1092,49 +1085,43 @@ uint *node;
 			switch( keysize ) {
 			case 4:			// 4 byte keys
 				judyuint = (uint *)base;
-				for( slot = 0; slot < cnt; slot++ )
-					if( judyuint[slot] > value )
+				while( slot-- )
+					if( test = judyuint[slot], test <= value )
 						break;
-					else
-						prev = judyuint[slot];
 
 				break;
 
 			case 3:			// 3 byte keys
-				judyuchar = (uchar *)base;
-				for( slot = 0; slot < cnt; slot++ ) {
-					test = *judyuchar++;
-					test |= *judyuchar++ << 8;
-					test |= *judyuchar++ << 16;
-					if( test > value )
+				judyuchar = base + cnt * keysize;
+				while( slot-- ) {
+					test = *--judyuchar << 16;
+					test |= *--judyuchar << 8;
+					test |= *--judyuchar;
+					if( test <= value )
 						break;
-					else
-						prev = test;
 				}
 
 				break;
 
 			case 2:			// 2 byte keys
 				judyushort = (ushort *)base;
-				for( slot = 0; slot < cnt; slot++ )
-					if( judyushort[slot] > value )
+				while( slot-- )
+					if( test = judyushort[slot], test <= value )
 						break;
-					else
-						prev = judyushort[slot];
+
 				break;
 
 			case 1:			// 1 byte keys
 				judyuchar = base;
-				for( slot = 0; slot < cnt; slot++ )
-					if( judyuchar[slot] > value )
+				while( slot-- )
+					if( test = judyuchar[slot], test <= value )
 						break;
-					else
-						prev = judyuchar[slot];
+
 				break;
 			}
 
-			if( slot && prev == value ) {
-				next = &node[-slot];
+			if( test == value ) {		// new key is equal to slot key
+				next = &node[-slot-1];
 
 				// is this a leaf?
 
@@ -1145,25 +1132,26 @@ uint *node;
 			}
 
 			//	if this node is not full
-			//	open up slot
+			//	open up cell after slot
 
 			if( !node[-1] ) {
-		 	  memmove(base, base + keysize, (slot - 1) * keysize);	// copy keys
-			  memcpy(base + (slot - 1) * keysize, &value , keysize);	// copy new key
-			  for( idx = 1; idx < slot; idx++ )
-				node[-idx] = node[-idx - 1];	// copy ptr
+		 	  memmove(base, base + keysize, slot * keysize);	// move keys less than new key down one slot
+			  memcpy(base + slot * keysize, &value, keysize);	// copy new key into slot
 
-			  node[-slot] = 0;
+			  for( idx = 0; idx < slot; idx++ )
+				node[-idx-1] = node[-idx-2];// copy tree ptrs/cells down one slot
+
+			  node[-slot-1] = 0;			// set new tree ptr/cell
+			  next = &node[-slot-1];
 
 			  if( !(value & 0xff) )
-			  	return &node[-slot];
+			  	return next;
 
-			  next = &node[-slot];
 			  continue;
 			}
 
 			if( size < MAX_judy ) {
-			  next = judy_promote (judy, next, slot, value, keysize, size);
+			  next = judy_promote (judy, next, slot+1, value, keysize, size);
 
 			  if( !(value & 0xff) )
 				return next;
@@ -1171,8 +1159,8 @@ uint *node;
 			  continue;
 			}
 
-			//	split full node into JUDY_radix nodes
-			//  loop to reprocess
+			//	split full maximal node into JUDY_radix nodes
+			//  loop to reprocess new insert
 
 			judy_splitnode (judy, next, size, keysize, JUDY_max);
 			off = start;
@@ -1202,17 +1190,17 @@ uint *node;
 			base = (uchar *)(*next & ~(uint)0x7);
 			node = (uint *)((*next & ~(uint)0x7) + JUDY_BASE_SIZE);
 			cnt = JUDY_BASE_SIZE - sizeof(uint);	// number of bytes
-			test = cnt;
+			tst = cnt;
 
-			if( test > max - off )
-				test = max - off;
+			if( tst > (int)(max - off) )
+				tst = max - off;
 
-			value = strncmp((const char *)base, (const char *)(buff + off), test);
+			value = strncmp((const char *)base, (const char *)(buff + off), tst);
 
-			if( !value && test < cnt && !base[test] ) // leaf?
+			if( !value && tst < cnt && !base[tst] ) // leaf?
 				return &node[-1];
 
-			if( !value && test == cnt ) {
+			if( !value && tst == cnt ) {
 				next = &node[-1];
 				off += cnt;
 				continue;
@@ -1252,12 +1240,12 @@ uint *node;
 		base = judy_alloc (judy, JUDY_span);
 		*next = (uint)base | JUDY_span;
 		node = (uint  *)(base + JUDY_BASE_SIZE);
-		cnt = test = JUDY_BASE_SIZE - sizeof(uint);	// maximum bytes
-		if( test > max - off )
-			test = max - off;
-		memcpy (base, buff + off, test);
+		cnt = tst = JUDY_BASE_SIZE - sizeof(uint);	// maximum bytes
+		if( tst > (int)(max - off) )
+			tst = max - off;
+		memcpy (base, buff + off, tst);
 		next = &node[-1];
-		off += test;
+		off += tst;
 		if( !base[cnt-1] )	// done on leaf
 			break;
 	}
@@ -1269,7 +1257,7 @@ int main (int argc, char **argv)
 {
 uchar buff[1024];
 FILE *in, *out;
-//uint max = 0;
+uint max = 0;
 void *judy;
 uint *cell;
 uint len;
@@ -1299,6 +1287,7 @@ uint idx;
 		if( len && buff[len - 1] == 0xd ) // Detect and remove Windows CR
 			buff[--len] = 0;
 		*(judy_cell (judy, buff, len)) += 1;		// count instances of string
+		max++;
 	}
 
 	cell = judy_strt (judy, NULL, 0);
