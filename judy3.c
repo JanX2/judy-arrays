@@ -1296,7 +1296,7 @@ uint idx;
 		buff[--len] = 0;
 		if( len && buff[len - 1] == 0xd ) // Detect and remove Windows CR
 			buff[--len] = 0;
-		*judy_cell (judy, buff, len) += 1;		// count instances of string
+		*(judy_cell (judy, buff, len)) += 1;		// count instances of string
 	}
 
 	cell = judy_strt (judy, NULL, 0);
