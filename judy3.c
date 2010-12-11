@@ -70,14 +70,14 @@ void vfree (void *what, uint size)
 #define JUDY_seg	65536
 
 enum JUDY_types {
-	JUDY_radix,		// inner and outer radix fan-out
-	JUDY_8,			// linear list nodes of designated size
-	JUDY_16,
-	JUDY_32,
-	JUDY_64,
-	JUDY_128,
-	JUDY_256,
-	JUDY_span,		// up to 28 tail bytes of key contiguously stored
+	JUDY_radix	= 0,	// inner and outer radix fan-out
+	JUDY_8		= 1,	// linear list nodes of designated size
+	JUDY_16		= 2,
+	JUDY_32		= 3,
+	JUDY_64		= 4,
+	JUDY_128	= 5,
+	JUDY_256	= 6,
+	JUDY_span	= 7,	// up to 28 tail bytes of key contiguously stored
 };
 
 typedef struct {
