@@ -1294,7 +1294,7 @@ uint idx;
 	while( fgets((char *)buff, sizeof(buff), in) ) {
 		len = strlen((const char *)buff);
 		buff[--len] = 0;
-		if( len && buff[len - 1] == 0xd )
+		if( len && buff[len - 1] == 0xd ) // Detect and remove Windows CR
 			buff[--len] = 0;
 		*judy_cell (judy, buff, len) += 1;		// count instances of string
 	}
