@@ -331,7 +331,7 @@ int keysize;
 			size += 8;
 			keysize = 4 - (judy->stack[idx].off & 3);
 			base = (uchar *)(judy->stack[idx].next & 0xfffffff8);
-			cnt = size / (sizeof(uint) + keysize);
+			//cnt = size / (sizeof(uint) + keysize);
 			off = keysize;
 			while( off-- && len < max )
 				buff[len++] = base[slot * keysize + off];
@@ -362,7 +362,7 @@ uint *judy_slot (Judy *judy, uchar *buff, uint max)
 int slot, size, keysize;
 uint next = *judy->root;
 uint value, prev, test;
-uint off = 0, start;
+uint off = 0/*, start*/;
 ushort *judyushort;
 uchar *judyuchar;
 uint *judyuint;
@@ -398,7 +398,7 @@ int cnt;
 			keysize = 4 - (off & 3);
 			node = (uint *)((next & 0xfffffff8) + size);
 			cnt = size / (sizeof(uint) + keysize);
-			start = off;
+			//start = off;
 			value = 0;
 			prev = 0;
 
@@ -620,11 +620,11 @@ int cnt, slot, start = 0;
 uint key = 0x100, nxt;
 uint *newradix;
 uchar *base;
-uint *node;
+//uint *node;
 
 	base = (uchar  *)(*next & 0xfffffff8);
 	cnt = size / (sizeof(uint) + keysize);
-	node = (uint *)(base + size);
+	//node = (uint *)(base + size);
 
 	//	allocate outer judy_radix node
 
@@ -1302,7 +1302,7 @@ uint idx;
 	cell = judy_strt (judy, NULL, 0);
 
 	do {
-		len = judy_key (judy, buff, sizeof(buff));
+		/*len = */judy_key(judy, buff, sizeof(buff));
 		for( idx = 0; idx < *cell; idx++ )		// spit out duplicates
 			fprintf(out, "%s\n", buff);
 	} while( (cell = judy_nxt (judy)) );
