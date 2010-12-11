@@ -38,6 +38,7 @@ typedef unsigned int uint;
 
 uint MaxMem = 0;
 
+void judy_abort (char *msg) __attribute__ ((noreturn)); // Tell static analyser that this function will not return
 void judy_abort (char *msg)
 {
 	fprintf(stderr, "%s\n", msg);
