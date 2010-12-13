@@ -41,7 +41,7 @@ typedef uint32_t uint;
 #define PRIuint PRIu32
 #endif
 
-#define JUDY_BASE_SIZE	32
+#define JUDY_span_SIZE	32
 
 #ifdef STANDALONE
 #include <stdio.h>
@@ -366,7 +366,7 @@ int keysize;
 			continue;
 		case JUDY_span:
 			base = (uchar *)(judy->stack[idx].next & ~(uint)0x7);
-			cnt = JUDY_BASE_SIZE - sizeof(uint);
+			cnt = JUDY_span_SIZE - sizeof(uint);
 
 			for( slot = 0; slot < cnt && base[slot]; slot++ )
 			  if( len < max )
@@ -512,9 +512,9 @@ int cnt;
 			break;
 
 		case JUDY_span:
-			node = (uint *)((next & ~(uint)0x7) + JUDY_BASE_SIZE);
+			node = (uint *)((next & ~(uint)0x7) + JUDY_span_SIZE);
 			base = (uchar *)(next & ~(uint)0x7);
-			cnt = tst = JUDY_BASE_SIZE - sizeof(uint);
+			cnt = tst = JUDY_span_SIZE - sizeof(uint);
 			if( tst > (int)(max - off) )
 				tst = max - off;
 			value = strncmp((const char *)base, (const char *)(buff + off), tst);
@@ -732,9 +732,9 @@ uint *node;
 			off++;
 			continue;
 		case JUDY_span:
-			node = (uint *)((next & ~(uint)0x7) + JUDY_BASE_SIZE);
+			node = (uint *)((next & ~(uint)0x7) + JUDY_span_SIZE);
 			base = (uchar *)(next & ~(uint)0x7);
-			cnt = JUDY_BASE_SIZE - sizeof(uint);	// number of bytes
+			cnt = JUDY_span_SIZE - sizeof(uint);	// number of bytes
 			if( !base[cnt - 1] )	// leaf node?
 				return &node[-1];
 			next = node[-1];
@@ -801,9 +801,9 @@ uint *node;
 			off++;
 			continue;
 		case JUDY_span:
-			node = (uint *)((next & ~(uint)0x7) + JUDY_BASE_SIZE);
+			node = (uint *)((next & ~(uint)0x7) + JUDY_span_SIZE);
 			base = (uchar *)(next & ~(uint)0x7);
-			cnt = JUDY_BASE_SIZE - sizeof(uint);	// number of bytes
+			cnt = JUDY_span_SIZE - sizeof(uint);	// number of bytes
 			if( !base[cnt - 1] )	// leaf node?
 				return &node[-1];
 			next = node[-1];
@@ -1044,8 +1044,8 @@ uint *cell;
 
 void judy_splitspan (Judy *judy, uint *next, uchar *base)
 {
-uint cnt = JUDY_BASE_SIZE - sizeof(uint);	// number of bytes
-uint *node = (uint *)(base + JUDY_BASE_SIZE);
+uint cnt = JUDY_span_SIZE - sizeof(uint);	// number of bytes
+uint *node = (uint *)(base + JUDY_span_SIZE);
 uchar *newbase;
 uint off = 0;
 
@@ -1223,8 +1223,8 @@ uint *node;
 
 		case JUDY_span:
 			base = (uchar *)(*next & ~(uint)0x7);
-			node = (uint *)((*next & ~(uint)0x7) + JUDY_BASE_SIZE);
-			cnt = JUDY_BASE_SIZE - sizeof(uint);	// number of bytes
+			node = (uint *)((*next & ~(uint)0x7) + JUDY_span_SIZE);
+			cnt = JUDY_span_SIZE - sizeof(uint);	// number of bytes
 			tst = cnt;
 
 			if( tst > (int)(max - off) )
@@ -1274,8 +1274,8 @@ uint *node;
 	while( off <= max ) {
 		base = judy_alloc (judy, JUDY_span);
 		*next = (uint)base | JUDY_span;
-		node = (uint  *)(base + JUDY_BASE_SIZE);
-		cnt = tst = JUDY_BASE_SIZE - sizeof(uint);	// maximum bytes
+		node = (uint  *)(base + JUDY_span_SIZE);
+		cnt = tst = JUDY_span_SIZE - sizeof(uint);	// maximum bytes
 		if( tst > (int)(max - off) )
 			tst = max - off;
 		memcpy (base, buff + off, tst);
