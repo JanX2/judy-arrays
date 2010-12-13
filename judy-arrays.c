@@ -42,6 +42,7 @@ typedef uint32_t uint;
 #endif
 
 #define JUDY_span_SIZE	32
+#define KEY_BYTES		4
 
 #ifdef STANDALONE
 #include <stdio.h>
@@ -352,7 +353,7 @@ int keysize;
 		case JUDY_8_OR_16:
 #endif
 			size += 8;
-			keysize = 4 - (judy->stack[idx].off & 3);
+			keysize = KEY_BYTES - (judy->stack[idx].off & 3);
 			base = (uchar *)(judy->stack[idx].next & ~(uint)0x7);
 			//cnt = size / (sizeof(uint) + keysize);
 			off = keysize;
@@ -420,7 +421,7 @@ int cnt;
 		case JUDY_8_OR_16:
 #endif
 			size += 8;
-			keysize = 4 - (off & 3);
+			keysize = KEY_BYTES - (off & 3);
 			node = (uint *)((next & ~(uint)0x7) + size);
 			cnt = size / (sizeof(uint) + keysize);
 			//start = off;
@@ -587,7 +588,7 @@ void judy_radix (Judy *judy, uint *radix, uchar *old, int start, int slot, int k
 int cnt = slot - start, newcnt;
 uint type = JUDY_8_OR_16 - 1;
 uint *node, *oldnode;
-int idx, size = 4;
+int idx, size = KEY_BYTES;
 uchar *base;
 uint *table;
 
@@ -700,7 +701,7 @@ uint *node;
 		case JUDY_8_OR_16:
 #endif
 			size += 8;
-			keysize = 4 - (off & 3);
+			keysize = KEY_BYTES - (off & 3);
 			node = (uint *)((next & ~(uint)0x7) + size);
 			base = (uchar *)(next & ~(uint)0x7);
 			cnt = size / (sizeof(uint) + keysize);
@@ -777,7 +778,7 @@ uint *node;
 		case JUDY_8_OR_16:
 #endif
 			size += 8;
-			keysize = 4 - (off & 3);
+			keysize = KEY_BYTES - (off & 3);
 			slot = size / (sizeof(uint) + keysize);
 			base = (uchar *)(next & ~(uint)0x7);
 			node = (uint *)((next & ~(uint)0x7) + size);
@@ -831,7 +832,7 @@ uint off;
 		next = judy->stack[judy->level].next;
 		slot = judy->stack[judy->level].slot;
 		off = judy->stack[judy->level].off;
-		keysize = 4 - (off & 3);
+		keysize = KEY_BYTES - (off & 3);
 		size = 0;
 
 		switch( next & 0x7 ) {
@@ -923,7 +924,7 @@ uint off;
 				continue;
 
 			base = (uchar *)(next & ~(uint)0x7);
-			keysize = 4 - (off & 3);
+			keysize = KEY_BYTES - (off & 3);
 
 			if( base[(slot - 1) * keysize] )
 				return judy_last (judy, node[-slot], (off | 3) + 1);
@@ -981,7 +982,7 @@ uchar *base;
 		case JUDY_8_OR_16:
 #endif
 			size += 8;
-			keysize = 4 - (off & 3);
+			keysize = KEY_BYTES - (off & 3);
 			cnt = size / (sizeof(uint) + keysize);
 			node = (uint *)((next & ~(uint)0x7) + size);
 			base = (uchar *)(next & ~(uint)0x7);
@@ -1059,8 +1060,8 @@ uint off = 0;
 		*newbase++ = base[off + 0];
 		next = (uint *)newbase;
 
-		off += 4;
-		cnt -= 4;
+		off += KEY_BYTES;
+		cnt -= KEY_BYTES;
 	} while( cnt && base[off - 1] );
 
 	*next = node[-1];
@@ -1101,7 +1102,7 @@ uint *node;
 		case JUDY_8_OR_16:
 #endif
 			size += 8;
-			keysize = 4 - (off & 3);
+			keysize = KEY_BYTES - (off & 3);
 			cnt = size / (sizeof(uint) + keysize);
 			base = (uchar *)(*next & ~(uint)0x7);
 			node = (uint *)((*next & ~(uint)0x7) + size);
@@ -1253,7 +1254,7 @@ uint *node;
 
 	if( off & 3 && off <= max ) {
 		base = judy_alloc (judy, JUDY_8_OR_16);
-		keysize = 4 - (off & 3);
+		keysize = KEY_BYTES - (off & 3);
 		node = (uint  *)(base + 8);
 		*next = (uint)base | JUDY_8_OR_16;
 
