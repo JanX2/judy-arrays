@@ -28,10 +28,18 @@
 	#include <malloc.h>
 #endif
 #include <memory.h>
+#include <stdint.h>
+#include <inttypes.h>
 
 typedef unsigned short ushort;
 typedef unsigned char uchar;
-typedef unsigned int uint;
+#ifdef __LP64__
+typedef uint64_t uint;
+#define PRIuint PRIu64
+#else
+typedef uint32_t uint;
+#define PRIuint PRIu32
+#endif
 
 #define JUDY_BASE_SIZE	32
 
