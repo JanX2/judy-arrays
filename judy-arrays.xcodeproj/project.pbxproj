@@ -25,9 +25,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		3DB3623512B379AA0036C0E1 /* judy-arrays.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = judy-arrays.c; sourceTree = "<group>"; };
-		8DD76FB20486AB0100D96B5E /* judy-arrays */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = judy-arrays; sourceTree = BUILT_PRODUCTS_DIR; };
-		C6A0FF2C0290799A04C91782 /* judy-arrays.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = judy-arrays.1; sourceTree = "<group>"; };
+		3DB3623512B379AA0036C0E1 /* judy-arrays.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "judy-arrays.c"; sourceTree = "<group>"; };
+		8DD76FB20486AB0100D96B5E /* judy-arrays */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "judy-arrays"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C6A0FF2C0290799A04C91782 /* judy-arrays.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = "judy-arrays.1"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -48,7 +48,7 @@
 				C6A0FF2B0290797F04C91782 /* Documentation */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
 			);
-			name = judy-arrays;
+			name = "judy-arrays";
 			sourceTree = "<group>";
 		};
 		08FB7795FE84155DC02AAC07 /* Source */ = {
@@ -90,9 +90,9 @@
 			);
 			dependencies = (
 			);
-			name = judy-arrays;
+			name = "judy-arrays";
 			productInstallPath = "$(HOME)/bin";
-			productName = judy-arrays;
+			productName = "judy-arrays";
 			productReference = 8DD76FB20486AB0100D96B5E /* judy-arrays */;
 			productType = "com.apple.product-type.tool";
 		};
@@ -143,7 +143,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = "";
 				INSTALL_PATH = /usr/local/bin;
-				PRODUCT_NAME = judy-arrays;
+				PRODUCT_NAME = "judy-arrays";
 			};
 			name = Debug;
 		};
@@ -155,7 +155,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PREPROCESSOR_DEFINITIONS = "";
 				INSTALL_PATH = /usr/local/bin;
-				PRODUCT_NAME = judy-arrays;
+				PRODUCT_NAME = "judy-arrays";
 			};
 			name = Release;
 		};
