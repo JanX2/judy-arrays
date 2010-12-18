@@ -391,7 +391,7 @@ uint off = 0/*, start*/;
 ushort *judyushort;
 uchar *judyuchar;
 uint value, test;
-uint *judyuint;
+uint32_t *judyuint;
 uchar *base;
 uint *table;
 uint *node;
@@ -440,7 +440,7 @@ int cnt;
 
 			switch( keysize ) {
 			case 4:			// 4 byte keys
-				judyuint = (uint *)(next & ~(uint)B8(00000111));
+				judyuint = (uint32_t *)(next & ~(uint)B8(00000111));
 				while( slot-- )
 					if( test = judyuint[slot], test <= value )
 						break;
@@ -1080,7 +1080,7 @@ uint *next = judy->root;
 uint off = 0, start;
 ushort *judyushort;
 uint test, value;
-uint *judyuint;
+uint32_t *judyuint;
 uint keysize;
 uint *table;
 uint *node;
@@ -1122,7 +1122,7 @@ uint *node;
 
 			switch( keysize ) {
 			case 4:			// 4 byte keys
-				judyuint = (uint *)base;
+				judyuint = (uint32_t *)base;
 				while( slot-- )
 					if( test = judyuint[slot], test <= value )
 						break;
