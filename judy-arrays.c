@@ -1175,7 +1175,7 @@ uint *node;
 			//	if this node is not full
 			//	open up cell after slot
 
-			if( !node[-1] ) {
+			if( !node[-1] ) { // if the entry before node is empty/zero
 		 	  memmove(base, base + keysize, slot * keysize);	// move keys less than new key down one slot
 			  memcpy(base + slot * keysize, &value, keysize);	// copy new key into slot
 
