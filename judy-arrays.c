@@ -33,18 +33,20 @@
 
 #include "binary_macros.h"
 
-typedef unsigned short ushort;
-typedef unsigned char uchar;
+typedef uint16_t ushort;
+typedef uint8_t uchar;
 #ifdef __LP64__
-typedef uint64_t uint;
-#define PRIuint PRIu64
+	typedef uint64_t uint;
+	#define PRIuint PRIu64
+	#define JUDY_span_SIZE	36 // CHANGEME: Testing only
+	#define KEY_BYTES		4
 #else
-typedef uint32_t uint;
-#define PRIuint PRIu32
+	typedef uint32_t uint;
+	#define PRIuint PRIu32
+	#define JUDY_span_SIZE	32
+	#define KEY_BYTES		4
 #endif
 
-#define JUDY_span_SIZE	32
-#define KEY_BYTES		4
 
 #ifdef STANDALONE
 #include <stdio.h>
@@ -390,7 +392,7 @@ uint next = *judy->root;
 uint off = 0/*, start*/;
 ushort *judyushort;
 uchar *judyuchar;
-uint value, test;
+uint32_t test, value;
 uint32_t *judyuint;
 uchar *base;
 uint *table;
@@ -472,6 +474,7 @@ int cnt;
 				while( slot-- )
 					if( test = judyuchar[slot], test <= value )
 						break;
+					
 				break;
 			}
 
@@ -1079,7 +1082,7 @@ uchar *base, *judyuchar;
 uint *next = judy->root;
 uint off = 0, start;
 ushort *judyushort;
-uint test, value;
+uint32_t test, value;
 uint32_t *judyuint;
 uint keysize;
 uint *table;
