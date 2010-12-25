@@ -98,6 +98,8 @@ int main(int argc, char **argv) {
 		printf("%"PRIuint " %"PRIuint "\n", index, value);
 
 		cell = judy_nxt(judy);
+		judy_prv(judy); // This should work if judy_prv() and judy_nxt() are symmetric, 
+		judy_nxt(judy); // but it doesn’t and they currently aren’t
 	}
 
 	printf("\n");
