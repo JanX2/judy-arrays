@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3DB3623612B379AA0036C0E1 /* judy-arrays.c in Sources */ = {isa = PBXBuildFile; fileRef = 3DB3623512B379AA0036C0E1 /* judy-arrays.c */; };
+		3DE7835E12C5F52B0046031C /* pairs-test.c in Sources */ = {isa = PBXBuildFile; fileRef = 3DE7835D12C5F52B0046031C /* pairs-test.c */; };
 		8DD76FB00486AB0100D96B5E /* judy-arrays.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = C6A0FF2C0290799A04C91782 /* judy-arrays.1 */; };
 /* End PBXBuildFile section */
 
@@ -27,11 +28,20 @@
 /* Begin PBXFileReference section */
 		3DB3623512B379AA0036C0E1 /* judy-arrays.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "judy-arrays.c"; sourceTree = "<group>"; };
 		3DB3641712B76F820036C0E1 /* binary_macros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = binary_macros.h; sourceTree = "<group>"; };
+		3DE7835412C5F4D90046031C /* pairs-test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "pairs-test"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3DE7835D12C5F52B0046031C /* pairs-test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "pairs-test.c"; sourceTree = "<group>"; };
 		8DD76FB20486AB0100D96B5E /* judy-arrays */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "judy-arrays"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6A0FF2C0290799A04C91782 /* judy-arrays.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = "judy-arrays.1"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		3DE7835212C5F4D90046031C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8DD76FAD0486AB0100D96B5E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -46,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				08FB7795FE84155DC02AAC07 /* Source */,
+				3DE7835912C5F4EA0046031C /* Tests */,
 				C6A0FF2B0290797F04C91782 /* Documentation */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
 			);
@@ -65,8 +76,17 @@
 			isa = PBXGroup;
 			children = (
 				8DD76FB20486AB0100D96B5E /* judy-arrays */,
+				3DE7835412C5F4D90046031C /* pairs-test */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		3DE7835912C5F4EA0046031C /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				3DE7835D12C5F52B0046031C /* pairs-test.c */,
+			);
+			name = Tests;
 			sourceTree = "<group>";
 		};
 		C6A0FF2B0290797F04C91782 /* Documentation */ = {
@@ -80,6 +100,22 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		3DE7835312C5F4D90046031C /* pairs-test */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3DE7835A12C5F4EA0046031C /* Build configuration list for PBXNativeTarget "pairs-test" */;
+			buildPhases = (
+				3DE7835112C5F4D90046031C /* Sources */,
+				3DE7835212C5F4D90046031C /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "pairs-test";
+			productName = "pairs-test";
+			productReference = 3DE7835412C5F4D90046031C /* pairs-test */;
+			productType = "com.apple.product-type.tool";
+		};
 		8DD76FA90486AB0100D96B5E /* judy-arrays */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1DEB928508733DD80010E9CD /* Build configuration list for PBXNativeTarget "judy-arrays" */;
@@ -118,11 +154,20 @@
 			projectRoot = "";
 			targets = (
 				8DD76FA90486AB0100D96B5E /* judy-arrays */,
+				3DE7835312C5F4D90046031C /* pairs-test */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		3DE7835112C5F4D90046031C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3DE7835E12C5F52B0046031C /* pairs-test.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8DD76FAB0486AB0100D96B5E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -143,7 +188,7 @@
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = "";
+				GCC_PREPROCESSOR_DEFINITIONS = STANDALONE;
 				INSTALL_PATH = /usr/local/bin;
 				PRODUCT_NAME = "judy-arrays";
 			};
@@ -155,7 +200,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
-				GCC_PREPROCESSOR_DEFINITIONS = "";
+				GCC_PREPROCESSOR_DEFINITIONS = STANDALONE;
 				INSTALL_PATH = /usr/local/bin;
 				PRODUCT_NAME = "judy-arrays";
 			};
@@ -189,6 +234,36 @@
 			};
 			name = Release;
 		};
+		3DE7835612C5F4DB0046031C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = /usr/local/bin;
+				PREBINDING = NO;
+				PRODUCT_NAME = "pairs-test";
+			};
+			name = Debug;
+		};
+		3DE7835712C5F4DB0046031C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PREBINDING = NO;
+				PRODUCT_NAME = "pairs-test";
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -206,6 +281,15 @@
 			buildConfigurations = (
 				1DEB928A08733DD80010E9CD /* Debug */,
 				1DEB928B08733DD80010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3DE7835A12C5F4EA0046031C /* Build configuration list for PBXNativeTarget "pairs-test" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3DE7835612C5F4DB0046031C /* Debug */,
+				3DE7835712C5F4DB0046031C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

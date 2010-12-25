@@ -9,7 +9,7 @@
 
 //	STANDALONE is defined to compile into a string sorter.
 
-#define STANDALONE
+//#define STANDALONE
 
 //	functions:
 //	judy_open:	open a new judy array returning a judy object.
@@ -59,6 +59,7 @@ void judy_abort (char *msg)
 	fprintf(stderr, "%s\n", msg);
 	exit(1);
 }
+#endif
 
 #if !defined(WIN32)
 void vfree (void *what, uint size)
@@ -77,7 +78,6 @@ void vfree (void *what, uint size)
 {
 	VirtualFree(what, 0, MEM_RELEASE);
 }
-#endif
 #endif
 
 #define JUDY_seg	65536
@@ -137,10 +137,16 @@ JudySeg *seg;
 Judy *judy;
 uint amt;
 
-	if( ((seg = valloc(JUDY_seg))) )
+	if( ((seg = valloc(JUDY_seg))) ) {
 		seg->next = JUDY_seg;
-	else
+	} else {
+#ifdef STANDALONE
 		judy_abort ("No virtual memory");
+#else
+		return NULL;
+#endif
+	}
+
 
 	amt = sizeof(Judy) + max * sizeof(JudyStack);
 
@@ -247,10 +253,16 @@ JudySeg *seg;
 	}
 
 	if( !judy->seg || judy->seg->next < amt + sizeof(*seg) ) {
-		if( (seg = valloc (JUDY_seg)) )
+		if( (seg = valloc (JUDY_seg)) ) {
 			seg->next = JUDY_seg, seg->seg = judy->seg, judy->seg = seg;
-		else
+		} else {
+#ifdef STANDALONE
 			judy_abort("Out of virtual memory");
+#else
+			return NULL;
+#endif
+		}
+
 #ifdef STANDALONE
 		MaxMem += JUDY_seg;
 #endif
@@ -272,10 +284,16 @@ void *block;
 		amt |= B8(00000111), amt += 1;
 
 	if( !judy->seg || judy->seg->next < amt + sizeof(*seg) ) {
-		if( (seg = valloc (JUDY_seg)) )
+		if( (seg = valloc (JUDY_seg)) ) {
 			seg->next = JUDY_seg, seg->seg = judy->seg, judy->seg = seg;
-		else
+		} else {
+#ifdef STANDALONE
 			judy_abort("Out of virtual memory");
+#else
+			return NULL;
+#endif
+		}
+	
 #ifdef STANDALONE
 		MaxMem += JUDY_seg;
 #endif
