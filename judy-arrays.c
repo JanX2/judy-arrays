@@ -78,8 +78,6 @@ void vfree (void *what, uint size)
 	VirtualFree(what, 0, MEM_RELEASE);
 }
 #endif
-#else
-#include "xlink.h"		// this can be whatever file you want, or delete it
 #endif
 
 #define JUDY_seg	65536
