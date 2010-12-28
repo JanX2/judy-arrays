@@ -11,13 +11,19 @@
 #include "judy-arrays.c"
 
 #ifdef __LP64__
+	#define BOTTOM_UP_SIZE	9
+	#define BOTTOM_UP_LAST	8
+	#define BOTTOM_UP_ALL_ZEROS	0x00
+
 	#if (BYTE_ORDER == BIG_ENDIAN)
-	#error "Big endian 64-bit implementation incomplete."
-	#else
-		#define uintNativeToBottomUp(A)	A
-		#define uintBottomUpToNative(A)	A
+		#error "Big endian 64-bit implementation incomplete."
 	#endif
+
 #else
+	#define BOTTOM_UP_SIZE	5
+	#define BOTTOM_UP_LAST	4
+	#define BOTTOM_UP_ALL_ZEROS	0xF0
+
 	#if (BYTE_ORDER == BIG_ENDIAN)
 	uint uintReverseBytes(uint in) {
 		char *c_in = (char *)&in;
@@ -33,14 +39,45 @@
 	}
 	#endif
 
-	#if (BYTE_ORDER == BIG_ENDIAN)
-		#define uintNativeToBottomUp(A)	uintReverseBytes(A)
-		#define uintBottomUpToNative(A)	uintReverseBytes(A)
-	#else
-		#define uintNativeToBottomUp(A)	A
-		#define uintBottomUpToNative(A)	A
-	#endif
 #endif
+
+#if (BYTE_ORDER == BIG_ENDIAN)
+	#define uintBottomUpBytes(A)	uintReverseBytes(A)
+#else
+	#define uintBottomUpBytes(A)	A
+#endif
+
+
+void uintNativeToBottomUp(uint index, uchar *buff) {
+	uint *uint_in_buff = (uint *)buff;
+	*uint_in_buff = uintBottomUpBytes(index);
+	buff[BOTTOM_UP_LAST] = 0xFF;
+	
+	for (int i = 0; i < sizeof(uint); i++) {
+		if (buff[i] == 0x00) {
+			buff[BOTTOM_UP_LAST] ^= (0x01 << i);
+			buff[i] = 0x01;
+		}
+	}
+}
+
+uint uintBottomUpToNative(uchar *buff) {
+	uint index;
+	
+	if (buff[BOTTOM_UP_LAST] == BOTTOM_UP_ALL_ZEROS) {
+		return 0;
+	}
+	else if (buff[BOTTOM_UP_LAST] != 0xFF) {
+		for (int i = 0; i < sizeof(uint); i++) {
+			if ((buff[BOTTOM_UP_LAST] & (0x01 << i)) == 0x00) {
+				buff[i] = 0x00;
+			}
+		}
+	}
+	
+	index = uintBottomUpBytes(*((uint *)buff));
+	return index;
+}
 
 int main(int argc, char **argv) {
 	uchar buff[1024];
@@ -68,12 +105,27 @@ int main(int argc, char **argv) {
 	if( !out )
 		fprintf(stderr, "unable to open output file\n");
 	
+	
+#if 0
+	uint test = 0;
+	
+	do {
+		index = test;
+		uintNativeToBottomUp(index, (uchar *)buff);
+		index = uintBottomUpToNative(buff);
+		if (index != test) {
+			printf("Encoding error: %"PRIuint "\n", test);
+		}
+		test++;
+	} while (test != 0);
+#endif
+	
 	judy = judy_open(512);
 	
 	while( fgets((char *)buff, sizeof(buff), in) ) {
 		if (sscanf((char *)buff, "%"PRIuint " %"PRIuint, &index, &value)) {
-			index = uintNativeToBottomUp(index);
-			cell = judy_cell(judy, (uchar *)&index, sizeof(index));
+			uintNativeToBottomUp(index, (uchar *)buff);
+			cell = judy_cell(judy, buff, BOTTOM_UP_SIZE);
 			if (value) {
 				*cell = value;                 // store new value
 			} else {
@@ -90,7 +142,7 @@ int main(int argc, char **argv) {
 	while (cell != NULL)
 	{
 		judy_key(judy, (uchar *)buff, sizeof(buff));
-		index = uintBottomUpToNative((uint)*buff);
+		index = uintBottomUpToNative(buff);
 		
 		value = *cell;
 		if (value == -1) {
@@ -106,14 +158,11 @@ int main(int argc, char **argv) {
 
 	printf("\n");
 
-	index = -1;
-	index = uintNativeToBottomUp(index);
-	cell = judy_slot(judy, (uchar *)&index, sizeof(index));
-	cell = judy_prv(judy);
+	cell = judy_end(judy);
 	while (cell != NULL)
 	{
 		judy_key(judy, (uchar *)buff, sizeof(buff));
-		index = uintBottomUpToNative((uint)*buff);
+		index = uintBottomUpToNative(buff);
 		
 		value = *cell;
 		if (value == -1) {
