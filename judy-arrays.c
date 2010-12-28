@@ -933,10 +933,11 @@ uint off;
 			base = (uchar *)(next & ~(uint)B8(00000111));
 			if( ++slot < cnt )
 #if BYTE_ORDER != BIG_ENDIAN
-				if( !base[slot * keysize] ) {
+				if( !base[slot * keysize] )
 #else
-				if( !base[slot * keysize + keysize - 1] ) {
+				if( !base[slot * keysize + keysize - 1] )
 #endif
+				{
 					judy->stack[judy->level].slot = slot;
 					return &node[-slot - 1];
 				} else {
