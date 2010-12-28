@@ -145,9 +145,7 @@ int main(int argc, char **argv) {
 		index = uintBottomUpToNative(buff);
 		
 		value = *cell;
-		if (value == -1) {
-			value = 0;
-		}
+		if (value == -1) value = 0;
 		printf("%"PRIuint " %"PRIuint "\n", index, value);
 
 		cell = judy_nxt(judy);
@@ -165,9 +163,7 @@ int main(int argc, char **argv) {
 		index = uintBottomUpToNative(buff);
 		
 		value = *cell;
-		if (value == -1) {
-			value = 0;
-		}
+		if (value == -1) value = 0;
 		printf("%"PRIuint " %"PRIuint "\n", index, value);
 		
 		judy_del(judy);
