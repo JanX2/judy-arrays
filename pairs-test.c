@@ -86,6 +86,7 @@ int main(int argc, char **argv) {
 	
 	index = 0;
 	cell = judy_strt(judy, NULL, 0);
+	cell = judy_nxt(judy);
 	while (cell != NULL)
 	{
 		judy_key(judy, (uchar *)buff, sizeof(buff));
@@ -98,11 +99,31 @@ int main(int argc, char **argv) {
 		printf("%"PRIuint " %"PRIuint "\n", index, value);
 
 		cell = judy_nxt(judy);
-		judy_prv(judy); // This should work if judy_prv() and judy_nxt() are symmetric, 
-		judy_nxt(judy); // but it doesn’t and they currently aren’t
+		//cell = judy_prv(judy); // This should work if judy_prv() and judy_nxt() are symmetric, 
+		//cell = judy_nxt(judy); // but it doesn’t and they currently aren’t
+		// Commenting out the two lines above results in working code
 	}
 
 	printf("\n");
+
+	index = -1;
+	index = uintNativeToBottomUp(index);
+	cell = judy_slot(judy, (uchar *)&index, sizeof(index));
+	cell = judy_prv(judy);
+	while (cell != NULL)
+	{
+		judy_key(judy, (uchar *)buff, sizeof(buff));
+		index = uintBottomUpToNative((uint)*buff);
+		
+		value = *cell;
+		if (value == -1) {
+			value = 0;
+		}
+		printf("%"PRIuint " %"PRIuint "\n", index, value);
+		
+		judy_del(judy);
+		cell = judy_prv(judy);
+	}
 
 	return 0;
 }
