@@ -1,5 +1,7 @@
-//	Judy arrays	22 NOV 2010
+//	Judy arrays	22 DEC 2010
+
 //	Author Karl Malbrain, malbrain@yahoo.com
+//	with assistance from Jan Weiss.
 
 //	Simplified judy arrays for strings
 //	Adapted from the ideas of Douglas Baskins of HP.
@@ -30,6 +32,23 @@
 #include <memory.h>
 #include <stdint.h>
 #include <inttypes.h>
+
+#ifdef linux
+	#include <endian.h>
+#else
+	#ifdef __BIG_ENDIAN__
+		#ifndef BYTE_ORDER
+			#define BYTE_ORDER 4321
+		#endif
+	#else
+		#ifndef BYTE_ORDER
+			#define BYTE_ORDER 4321
+		#endif
+	#endif
+	#ifndef BIG_ENDIAN
+		#define BIG_ENDIAN 4321
+	#endif
+#endif
 
 #include "binary_macros.h"
 
@@ -377,8 +396,13 @@ int keysize;
 			base = (uchar *)(judy->stack[idx].next & ~(uint)B8(00000111));
 			//cnt = size / (sizeof(uint) + keysize);
 			off = keysize;
+#if BYTE_ORDER != BIG_ENDIAN
 			while( off-- && len < max )
 				buff[len++] = base[slot * keysize + off];
+#else
+			for( off = 0; off < keysize && len < max; off++ )
+				buff[len++] = base[slot * keysize + off];
+#endif
 			continue;
 		case JUDY_radix:
 			if( !slot )
@@ -468,9 +492,15 @@ int cnt;
 			case 3:			// 3 byte keys
 				judyuchar = (uchar *)(next & ~(uint)B8(00000111)) + cnt * keysize;
 				while( slot-- ) {
+#if BYTE_ORDER != BIG_ENDIAN
 					test = *--judyuchar << 16;
 					test |= *--judyuchar << 8;
 					test |= *--judyuchar;
+#else
+					test = *--judyuchar;
+					test |= *--judyuchar << 8;
+					test |= *--judyuchar << 16;
+#endif
 					if( test <= value )
 						break;
 				}
@@ -562,6 +592,9 @@ uint *judy_promote (Judy *judy, uint *next, int idx, uint value, int keysize, in
 uint *node = (uint *)((*next & ~(uint)B8(00000111)) + size);
 uchar *base = (uchar *)(*next & ~(uint)B8(00000111));
 int oldcnt, newcnt, slot;
+#if BYTE_ORDER == BIG_ENDIAN
+	int i;
+#endif
 uchar *newbase;
 uint *newnode;
 uint *result;
@@ -586,7 +619,14 @@ uint type;
 
 	//	fill in new node
 
+#if BYTE_ORDER != BIG_ENDIAN
 	memcpy(newbase + (idx + newcnt - oldcnt - 1) * keysize, &value, keysize);	// copy key
+#else
+	i = keysize;
+
+	while( i-- )
+	  newbase[(idx + newcnt - oldcnt - 1) * keysize + i] = value, value >>= 8;
+#endif
 	result = &newnode[-(idx + newcnt - oldcnt)];
 
 	//	copy rest of old node
@@ -647,7 +687,11 @@ uint *table;
 	//	shorten keys by 1 byte during copy
 
 	for( idx = 0; idx < cnt; idx++ ) {
+#if BYTE_ORDER != BIG_ENDIAN
 		memcpy (base + (newcnt - idx - 1) * keysize, old + (start + cnt - idx - 1) * (keysize + 1), keysize);
+#else
+		memcpy (base + (newcnt - idx - 1) * keysize, old + (start + cnt - idx - 1) * (keysize + 1) + 1, keysize);
+#endif
 		node[-(newcnt - idx)] = oldnode[-(start + cnt - idx)];
 	}
 }
@@ -672,7 +716,11 @@ uchar *base;
 	*next = (uint)newradix | JUDY_radix;
 
 	for( slot = 0; slot < cnt; slot++ ) {
+#if BYTE_ORDER != BIG_ENDIAN
 		nxt = base[slot * keysize + keysize - 1];
+#else
+		nxt = base[slot * keysize];
+#endif
 
 		if( key > B8(11111111) )
 			key = nxt;
@@ -732,9 +780,13 @@ uint *node;
 					break;
 
 			judy->stack[judy->level].slot = slot;
+#if BYTE_ORDER != BIG_ENDIAN
 			if( !base[slot * keysize] )
 				return &node[-slot-1];
-
+#else
+			if( !base[slot * keysize + keysize - 1] )
+				return &node[-slot-1];
+#endif
 			next = node[-slot - 1];
 			off = (off | B8(00000011)) + 1;
 			continue;
@@ -803,8 +855,13 @@ uint *node;
 			slot = size / (sizeof(uint) + keysize);
 			base = (uchar *)(next & ~(uint)B8(00000111));
 			node = (uint *)((next & ~(uint)B8(00000111)) + size);
+#if BYTE_ORDER != BIG_ENDIAN
 			if( !base[--slot * keysize] )
 				return &node[-slot-1];
+#else
+			if( !base[--slot * keysize + keysize - 1] )
+				return &node[-slot-1];
+#endif
 			next = node[-slot-1];
 			off += keysize;
 			continue;
@@ -875,7 +932,11 @@ uint off;
 			node = (uint *)((next & ~(uint)B8(00000111)) + size);
 			base = (uchar *)(next & ~(uint)B8(00000111));
 			if( ++slot < cnt )
+#if BYTE_ORDER != BIG_ENDIAN
 				if( !base[slot * keysize] ) {
+#else
+				if( !base[slot * keysize + keysize - 1] ) {
+#endif
 					judy->stack[judy->level].slot = slot;
 					return &node[-slot - 1];
 				} else {
@@ -945,9 +1006,14 @@ uint off;
 				continue;
 
 			base = (uchar *)(next & ~(uint)B8(00000111));
+			judy->stack[judy->level].slot--;
 			keysize = KEY_BYTES - (off & B8(00000011));
 
+#if BYTE_ORDER != BIG_ENDIAN
 			if( base[(slot - 1) * keysize] )
+#else
+			if( base[(slot - 1) * keysize + keysize - 1] )
+#endif
 				return judy_last (judy, node[-slot], (off | B8(00000011)) + 1);
 
 			return &node[-slot];
@@ -955,13 +1021,15 @@ uint off;
 		case JUDY_radix:
 			table = (uint *)(next & ~(uint)B8(00000111));
 
-			while( slot-- )
+			while( slot-- ) {
+			  judy->stack[judy->level].slot--;
 			  if( (inner = (uint *)(table[slot >> 4] & ~(uint)B8(00000111))) )
 				if( inner[slot & B8(00001111)] )
 				  if( slot )
 				    return judy_last(judy, inner[slot & B8(00001111)], off + 1);
 				  else
 					return &inner[0];
+			}
 
 			continue;
 
@@ -1050,7 +1118,7 @@ uchar *base;
 	*judy->root = 0;
 }
 
-//	return first key greater than or equal to given key
+//	return cell for first key greater than or equal to given key
 
 uint *judy_strt (Judy *judy, uchar *buff, uint max)
 {
@@ -1075,10 +1143,15 @@ uint off = 0;
 		newbase = judy_alloc (judy, JUDY_8_OR_16);
 		*next = (uint)newbase | JUDY_8_OR_16;
 
+#if BYTE_ORDER != BIG_ENDIAN
 		*newbase++ = base[off + 3];
 		*newbase++ = base[off + 2];
 		*newbase++ = base[off + 1];
 		*newbase++ = base[off + 0];
+#else
+		memcpy (newbase, base + off, 4);
+		newbase += 4;
+#endif
 		next = (uint *)newbase;
 
 		off += KEY_BYTES;
@@ -1151,9 +1224,15 @@ uint *node;
 			case 3:			// 3 byte keys
 				judyuchar = base + cnt * keysize;
 				while( slot-- ) {
+#if BYTE_ORDER != BIG_ENDIAN
 					test = *--judyuchar << 16;
 					test |= *--judyuchar << 8;
 					test |= *--judyuchar;
+#else
+					test = *--judyuchar;
+					test |= *--judyuchar << 8;
+					test |= *--judyuchar << 16;
+#endif
 					if( test <= value )
 						break;
 				}
@@ -1193,8 +1272,15 @@ uint *node;
 
 			if( !node[-1] ) { // if the entry before node is empty/zero
 		 	  memmove(base, base + keysize, slot * keysize);	// move keys less than new key down one slot
+#if BYTE_ORDER != BIG_ENDIAN
 			  memcpy(base + slot * keysize, &value, keysize);	// copy new key into slot
+#else
+			  test = value;
+			  idx = keysize;
 
+			  while( idx-- )
+				  base[slot * keysize + idx] = test, test >>= 8;
+#endif
 			  for( idx = 0; idx < slot; idx++ )
 				node[-idx-1] = node[-idx-2];// copy tree ptrs/cells down one slot
 
@@ -1281,11 +1367,20 @@ uint *node;
 
 		//	fill in slot 0 with bytes of key
 
+#if BYTE_ORDER != BIG_ENDIAN
 		while( keysize )
 			if( off + --keysize < max )
 				*base++ = buff[off + keysize];
 			else
 				base++;
+#else
+		tst = keysize;
+
+		if( tst > (int)(max - off) )
+			tst = max - off;
+
+		memcpy (base, buff + off, tst);
+#endif
 		next = &node[-1];
 		off |= B8(00000011);
 		off++;
@@ -1349,7 +1444,7 @@ uint idx;
 
 	cell = judy_strt (judy, NULL, 0);
 
-	do {
+	if( cell ) do {
 		/*len = */judy_key(judy, buff, sizeof(buff));
 		for( idx = 0; idx < *cell; idx++ )		// spit out duplicates
 			fprintf(out, "%s\n", buff);
