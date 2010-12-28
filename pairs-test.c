@@ -166,7 +166,7 @@ int main(int argc, char **argv) {
 		if (value == -1) value = 0;
 		printf("%"PRIuint " %"PRIuint "\n", index, value);
 		
-		judy_del(judy);
+		//judy_del(judy);
 		cell = judy_prv(judy);
 	}
 
