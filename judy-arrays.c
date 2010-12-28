@@ -1130,6 +1130,14 @@ uint *cell;
 	return judy_nxt (judy);
 }
 
+//	return cell for the key with the highest value
+
+uint *judy_end (Judy *judy)
+{
+	judy->level = 0;
+	return judy_last(judy, *judy->root, 0);
+}
+
 //	split open span node
 
 void judy_splitspan (Judy *judy, uint *next, uchar *base)
