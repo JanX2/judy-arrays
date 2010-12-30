@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
 		
 		value = *cell;
 		if (value == -1) value = 0;
-		printf("%"PRIuint " %"PRIuint "\n", index, value);
+		printf("%"PRIjudyvalue " %"PRIjudyvalue "\n", index, value);
 
 		cell = judy_nxt(judy);
 #define SYMMETRY_TEST	1
@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
 		
 		value = *cell;
 		if (value == -1) value = 0;
-		printf("%"PRIuint " %"PRIuint "\n", index, value);
+		printf("%"PRIjudyvalue " %"PRIjudyvalue "\n", index, value);
 		
 		//judy_del(judy);
 		cell = judy_prv(judy);
