@@ -83,9 +83,9 @@ int main(int argc, char **argv) {
 	uchar buff[1024];
 	FILE *in, *out;
 	
-	uint index;							// array index
-	uint value;							// array element value
-	uint *cell;							// pointer to array element value
+	judyvalue index;					// array index
+	judyvalue value;					// array element value
+	judyslot *cell;						// pointer to array element value
 	
 	void *judy;							// poiner to Judy array
 	
