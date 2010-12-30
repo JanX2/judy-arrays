@@ -450,6 +450,7 @@ int cnt;
 
 		case JUDY_span:
 			node = (judyslot *)((next & JUDY_mask) + JudySize[JUDY_span]);
+			base = (uchar *)(next & JUDY_mask);
 			cnt = tst = JUDY_span_bytes;
 			if( tst > (int)(max - off) )
 				tst = max - off;
