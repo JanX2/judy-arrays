@@ -149,9 +149,12 @@ int main(int argc, char **argv) {
 		printf("%"PRIuint " %"PRIuint "\n", index, value);
 
 		cell = judy_nxt(judy);
-		//cell = judy_prv(judy); // This should work if judy_prv() and judy_nxt() are symmetric, 
-		//cell = judy_nxt(judy); // but it doesn’t and they currently aren’t
-		// Commenting out the two lines above results in working code
+#define SYMMETRY_TEST	0
+#if SYMMETRY_TEST
+		cell = judy_prv(judy); // This should work if judy_prv() and judy_nxt() are symmetric, 
+		cell = judy_nxt(judy); // but it doesn’t and they currently aren’t
+		// Only disabling the two lines above currently results in correctly working code
+#endif
 	}
 
 	printf("\n");
