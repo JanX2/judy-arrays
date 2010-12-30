@@ -21,6 +21,7 @@
 //	judy_strt:	retrieve the cell pointer greater than or equal to given key
 //	judy_slot:	retrieve the cell pointer, or return NULL for a given key.
 //	judy_key:	retrieve the string value for the most recent judy query.
+//	judy_end:	retrieve the cell pointer for the last string in the array.
 //	judy_nxt:	retrieve the cell pointer for the next string in the array.
 //	judy_prv:	retrieve the cell pointer for the prev string in the array.
 //	judy_del:	delete the key and cell for the most recent judy query.
@@ -66,6 +67,7 @@ typedef uint8_t uchar;
 	#define KEY_BYTES		4
 #endif
 
+#define JUDY_mask (~(uint)B8(00000111))
 
 #ifdef STANDALONE
 #include <stdio.h>
@@ -103,10 +105,7 @@ void vfree (void *what, uint size)
 
 enum JUDY_types {
 	JUDY_radix		= 0,	// inner and outer radix fan-out
-#ifndef __LP64__
-	JUDY_8_OR_16	= 1,	// linear list nodes of designated size
-#else
-#endif
+	JUDY_8			= 1,	// linear list nodes of designated size
 	JUDY_16			= 2,
 	JUDY_32			= 3,
 	JUDY_64			= 4,
@@ -114,10 +113,6 @@ enum JUDY_types {
 	JUDY_256		= 6,
 	JUDY_span		= 7,	// up to 28 tail bytes of key contiguously stored
 };
-
-#ifdef __LP64__
-	#define JUDY_8_OR_16	JUDY_16
-#endif
 
 typedef struct {
 	void *seg;			// next used allocator
@@ -156,7 +151,7 @@ JudySeg *seg;
 Judy *judy;
 uint amt;
 
-	if( ((seg = valloc(JUDY_seg))) ) {
+	if( (seg = valloc(JUDY_seg)) ) {
 		seg->next = JUDY_seg;
 	} else {
 #ifdef STANDALONE
@@ -168,6 +163,9 @@ uint amt;
 
 
 	amt = sizeof(Judy) + max * sizeof(JudyStack);
+#ifdef STANDALONE
+	MaxMem += JUDY_seg;
+#endif
 
 	if( amt & B8(00000111) )
 		amt |= B8(00000111), amt++;
@@ -197,8 +195,7 @@ void **block;
 JudySeg *seg;
 
 	switch( type ) {
-#ifndef __LP64__
-	case JUDY_8_OR_16:
+	case JUDY_8:
 		amt = 8;
 
 		if( (block = judy->judy8) ) {
@@ -207,7 +204,6 @@ JudySeg *seg;
 			return (void *)block;
 		}
 		break;
-#endif
 			
 	case JUDY_16:
 		amt = 16;
@@ -327,12 +323,10 @@ void *block;
 void judy_free (Judy *judy, void *block, int type)
 {
 	switch( type ) {
-#ifndef __LP64__
-	case JUDY_8_OR_16:
+	case JUDY_8:
 		*((void **)(block)) = judy->judy8;
 		judy->judy8 = (void **)block;
 		return;
-#endif
 	case JUDY_16:
 		*((void **)(block)) = judy->judy16;
 		judy->judy16 = (void **)block;
@@ -388,12 +382,10 @@ int keysize;
 			size += 16;
 		case JUDY_16:
 			size += 8;
-#ifndef __LP64__
-		case JUDY_8_OR_16:
-#endif
+		case JUDY_8:
 			size += 8;
 			keysize = KEY_BYTES - (judy->stack[idx].off & B8(00000011));
-			base = (uchar *)(judy->stack[idx].next & ~(uint)B8(00000111));
+			base = (uchar *)(judy->stack[idx].next & JUDY_mask);
 			//cnt = size / (sizeof(uint) + keysize);
 			off = keysize;
 #if BYTE_ORDER != BIG_ENDIAN
@@ -410,7 +402,7 @@ int keysize;
 			buff[len++] = slot;
 			continue;
 		case JUDY_span:
-			base = (uchar *)(judy->stack[idx].next & ~(uint)B8(00000111));
+			base = (uchar *)(judy->stack[idx].next & JUDY_mask);
 			cnt = JUDY_span_SIZE - sizeof(uint);
 
 			for( slot = 0; slot < cnt && base[slot]; slot++ )
@@ -461,12 +453,10 @@ int cnt;
 			size += 16;
 		case JUDY_16:
 			size += 8;
-#ifndef __LP64__
-		case JUDY_8_OR_16:
-#endif
+		case JUDY_8:
 			size += 8;
 			keysize = KEY_BYTES - (off & B8(00000011));
-			node = (uint *)((next & ~(uint)B8(00000111)) + size);
+			node = (uint *)((next & JUDY_mask) + size);
 			cnt = size / (sizeof(uint) + keysize);
 			//start = off;
 			slot = cnt;
@@ -482,15 +472,15 @@ int cnt;
 
 			switch( keysize ) {
 			case 4:			// 4 byte keys
-				judyuint = (uint32_t *)(next & ~(uint)B8(00000111));
+				judyuint = (uint32_t *)(next & JUDY_mask);
 				while( slot-- )
-					if( test = judyuint[slot], test <= value )
+					if( (test = judyuint[slot]), test <= value )
 						break;
 
 				break;
 
 			case 3:			// 3 byte keys
-				judyuchar = (uchar *)(next & ~(uint)B8(00000111)) + cnt * keysize;
+				judyuchar = (uchar *)(next & JUDY_mask) + cnt * keysize;
 				while( slot-- ) {
 #if BYTE_ORDER != BIG_ENDIAN
 					test = *--judyuchar << 16;
@@ -508,17 +498,17 @@ int cnt;
 				break;
 
 			case 2:			// 2 byte keys
-				judyushort = (ushort *)(next & ~(uint)B8(00000111));
+				judyushort = (ushort *)(next & JUDY_mask);
 				while( slot-- )
-					if( test = judyushort[slot], test <= value )
+					if( (test = judyushort[slot]), test <= value )
 						break;
 
 				break;
 
 			case 1:			// 1 byte keys
-				judyuchar = (uchar *)(next & ~(uint)B8(00000111));
+				judyuchar = (uchar *)(next & JUDY_mask);
 				while( slot-- )
-					if( test = judyuchar[slot], test <= value )
+					if( (test = judyuchar[slot]), test <= value )
 						break;
 					
 				break;
@@ -530,7 +520,7 @@ int cnt;
 
 				// is this a leaf?
 
-				if( !(value & B8(11111111)) )
+				if( !(value & JUDY_mask) )
 					return &node[-slot-1];
 
 				next = node[-slot-1];
@@ -540,7 +530,7 @@ int cnt;
 			return 0;
 
 		case JUDY_radix:
-			table = (uint  *)(next & ~(uint)B8(00000111)); // outer radix
+			table = (uint  *)(next & JUDY_mask); // outer radix
 
 			if( off < max )
 				slot = buff[off];
@@ -552,7 +542,7 @@ int cnt;
 			judy->stack[judy->level].slot = slot;
 
 			if( (next = table[slot >> 4]) )
-				table = (uint  *)(next & ~(uint)B8(00000111)); // inner radix
+				table = (uint  *)(next & JUDY_mask); // inner radix
 			else
 				return 0;
 
@@ -564,8 +554,8 @@ int cnt;
 			break;
 
 		case JUDY_span:
-			node = (uint *)((next & ~(uint)B8(00000111)) + JUDY_span_SIZE);
-			base = (uchar *)(next & ~(uint)B8(00000111));
+			node = (uint *)((next & JUDY_mask) + JUDY_span_SIZE);
+			base = (uchar *)(next & JUDY_mask);
 			cnt = tst = JUDY_span_SIZE - sizeof(uint);
 			if( tst > (int)(max - off) )
 				tst = max - off;
@@ -589,8 +579,8 @@ int cnt;
 
 uint *judy_promote (Judy *judy, uint *next, int idx, uint value, int keysize, int size)
 {
-uint *node = (uint *)((*next & ~(uint)B8(00000111)) + size);
-uchar *base = (uchar *)(*next & ~(uint)B8(00000111));
+uint *node = (uint *)((*next & JUDY_mask) + size);
+uchar *base = (uchar *)(*next & JUDY_mask);
 int oldcnt, newcnt, slot;
 #if BYTE_ORDER == BIG_ENDIAN
 	int i;
@@ -636,6 +626,8 @@ uint type;
 	for( ; slot < oldcnt; slot++ )
 		newnode[-(slot + newcnt - oldcnt + 1)] = node[-(slot + 1)];	// copy ptr
 
+	judy->stack[judy->level].next = *next;
+	judy->stack[judy->level].slot = idx + newcnt - oldcnt - 1;
 	judy_free (judy, (void **)base, type - 1);
 	return result;
 }
@@ -647,7 +639,7 @@ uint type;
 void judy_radix (Judy *judy, uint *radix, uchar *old, int start, int slot, int keysize, uchar key)
 {
 int cnt = slot - start, newcnt;
-uint type = JUDY_8_OR_16 - 1;
+uint type = JUDY_8 - 1;
 uint *node, *oldnode;
 int idx, size = KEY_BYTES;
 uchar *base;
@@ -655,7 +647,7 @@ uint *table;
 
 	//	if necessary, setup inner radix node
 
-	if( (!(table = (uint *)(radix[key >> 4] & ~(uint)B8(00000111)))) ) {
+	if( (!(table = (uint *)(radix[key >> 4] & JUDY_mask))) ) {
 		table = judy_alloc (judy, JUDY_radix);
 		radix[key >> 4] = (uint)table | JUDY_radix;
 	}
@@ -706,7 +698,7 @@ uint *newradix;
 uchar *base;
 //uint *node;
 
-	base = (uchar  *)(*next & ~(uint)B8(00000111));
+	base = (uchar  *)(*next & JUDY_mask);
 	cnt = size / (sizeof(uint) + keysize);
 	//node = (uint *)(base + size);
 
@@ -766,13 +758,11 @@ uint *node;
 			size += 16;
 		case JUDY_16:
 			size += 8;
-#ifndef __LP64__
-		case JUDY_8_OR_16:
-#endif
+		case JUDY_8:
 			size += 8;
 			keysize = KEY_BYTES - (off & B8(00000011));
-			node = (uint *)((next & ~(uint)B8(00000111)) + size);
-			base = (uchar *)(next & ~(uint)B8(00000111));
+			node = (uint *)((next & JUDY_mask) + size);
+			base = (uchar *)(next & JUDY_mask);
 			cnt = size / (sizeof(uint) + keysize);
 
 			for( slot = 0; slot < cnt; slot++ )
@@ -791,9 +781,9 @@ uint *node;
 			off = (off | B8(00000011)) + 1;
 			continue;
 		case JUDY_radix:
-			table = (uint *)(next & ~(uint)B8(00000111));
+			table = (uint *)(next & JUDY_mask);
 			for( slot = 0; slot < 256; slot++ )
-			  if( (inner = (uint *)(table[slot >> 4] & ~(uint)B8(00000111))) ) {
+			  if( (inner = (uint *)(table[slot >> 4] & JUDY_mask)) ) {
 				if( (next = inner[slot & B8(00001111)]) ) {
 				  judy->stack[judy->level].slot = slot;
 				  if( !slot )
@@ -806,8 +796,8 @@ uint *node;
 			off++;
 			continue;
 		case JUDY_span:
-			node = (uint *)((next & ~(uint)B8(00000111)) + JUDY_span_SIZE);
-			base = (uchar *)(next & ~(uint)B8(00000111));
+			node = (uint *)((next & JUDY_mask) + JUDY_span_SIZE);
+			base = (uchar *)(next & JUDY_mask);
 			cnt = JUDY_span_SIZE - sizeof(uint);	// number of bytes
 			if( !base[cnt - 1] )	// leaf node?
 				return &node[-1];
@@ -847,28 +837,29 @@ uint *node;
 			size += 16;
 		case JUDY_16:
 			size += 8;
-#ifndef __LP64__
-		case JUDY_8_OR_16:
-#endif
+		case JUDY_8:
 			size += 8;
 			keysize = KEY_BYTES - (off & B8(00000011));
 			slot = size / (sizeof(uint) + keysize);
-			base = (uchar *)(next & ~(uint)B8(00000111));
-			node = (uint *)((next & ~(uint)B8(00000111)) + size);
+			base = (uchar *)(next & JUDY_mask);
+			node = (uint *)((next & JUDY_mask) + size);
+			judy->stack[judy->level].slot = --slot;
+
 #if BYTE_ORDER != BIG_ENDIAN
-			if( !base[--slot * keysize] )
-				return &node[-slot-1];
+			if( !base[slot * keysize] )
 #else
-			if( !base[--slot * keysize + keysize - 1] )
-				return &node[-slot-1];
+			if( !base[slot * keysize + keysize - 1] )
 #endif
+				return &node[-slot-1];
+
 			next = node[-slot-1];
 			off += keysize;
 			continue;
 		case JUDY_radix:
-			table = (uint *)(next & ~(uint)B8(00000111));
+			table = (uint *)(next & JUDY_mask);
 			for( slot = 256; slot--; ) {
-			  if( (inner = (uint *)(table[slot >> 4] & ~(uint)B8(00000111))) ) {
+			  judy->stack[judy->level].slot = slot;
+			  if( (inner = (uint *)(table[slot >> 4] & JUDY_mask)) ) {
 				if( (next = inner[slot & B8(00001111)]) )
 				  if( !slot )
 					return &inner[0];
@@ -880,8 +871,8 @@ uint *node;
 			off++;
 			continue;
 		case JUDY_span:
-			node = (uint *)((next & ~(uint)B8(00000111)) + JUDY_span_SIZE);
-			base = (uchar *)(next & ~(uint)B8(00000111));
+			node = (uint *)((next & JUDY_mask) + JUDY_span_SIZE);
+			base = (uchar *)(next & JUDY_mask);
 			cnt = JUDY_span_SIZE - sizeof(uint);	// number of bytes
 			if( !base[cnt - 1] )	// leaf node?
 				return &node[-1];
@@ -891,6 +882,14 @@ uint *node;
 		}
 	}
 	return 0;
+}
+
+//	judy_end: return last entry
+
+uint *judy_end (Judy *judy)
+{
+	judy->level = 0;
+	return judy_last (judy, *judy->root, 0);
 }
 
 //	judy_nxt: return next entry
@@ -905,6 +904,9 @@ uchar *base;
 uint *node;
 uint next;
 uint off;
+
+	if( !judy->level )
+		return judy_first (judy, *judy->root, 0);
 
 	while( judy->level ) {
 		next = judy->stack[judy->level].next;
@@ -924,13 +926,11 @@ uint off;
 			size += 16;
 		case JUDY_16:
 			size += 8;
-#ifndef __LP64__
-		case JUDY_8_OR_16:
-#endif
+		case JUDY_8:
 			size += 8;
 			cnt = size / (sizeof(uint) + keysize);
-			node = (uint *)((next & ~(uint)B8(00000111)) + size);
-			base = (uchar *)(next & ~(uint)B8(00000111));
+			node = (uint *)((next & JUDY_mask) + size);
+			base = (uchar *)(next & JUDY_mask);
 			if( ++slot < cnt )
 #if BYTE_ORDER != BIG_ENDIAN
 				if( !base[slot * keysize] )
@@ -948,10 +948,10 @@ uint off;
 			continue;
 
 		case JUDY_radix:
-			table = (uint *)(next & ~(uint)B8(00000111));
+			table = (uint *)(next & JUDY_mask);
 
 			while( ++slot < 256 )
-			  if( (inner = (uint *)(table[slot >> 4] & ~(uint)B8(00000111))) ) {
+			  if( (inner = (uint *)(table[slot >> 4] & JUDY_mask)) ) {
 				if( inner[slot & B8(00001111)] ) {
 				  judy->stack[judy->level].slot = slot;
 				  return judy_first(judy, inner[slot & B8(00001111)], off + 1);
@@ -984,7 +984,7 @@ uint off;
 	while( judy->level ) {
 		next = judy->stack[judy->level].next;
 		slot = judy->stack[judy->level].slot;
-		off = judy->stack[judy->level--].off;
+		off = judy->stack[judy->level].off;
 		size = 0;
 
 		switch( next & B8(00000111) ) {
@@ -998,15 +998,15 @@ uint off;
 			size += 16;
 		case JUDY_16:
 			size += 8;
-#ifndef __LP64__
-		case JUDY_8_OR_16:
-#endif
+		case JUDY_8:
 			size += 8;
-			node = (uint *)((next & ~(uint)B8(00000111)) + size);
-			if( !slot || !node[-slot] )
+			node = (uint *)((next & JUDY_mask) + size);
+			if( !slot || !node[-slot] ) {
+				judy->level--;
 				continue;
+			}
 
-			base = (uchar *)(next & ~(uint)B8(00000111));
+			base = (uchar *)(next & JUDY_mask);
 			judy->stack[judy->level].slot--;
 			keysize = KEY_BYTES - (off & B8(00000011));
 
@@ -1020,11 +1020,11 @@ uint off;
 			return &node[-slot];
 
 		case JUDY_radix:
-			table = (uint *)(next & ~(uint)B8(00000111));
+			table = (uint *)(next & JUDY_mask);
 
 			while( slot-- ) {
 			  judy->stack[judy->level].slot--;
-			  if( (inner = (uint *)(table[slot >> 4] & ~(uint)B8(00000111))) )
+			  if( (inner = (uint *)(table[slot >> 4] & JUDY_mask)) )
 				if( inner[slot & B8(00001111)] )
 				  if( slot )
 				    return judy_last(judy, inner[slot & B8(00001111)], off + 1);
@@ -1032,9 +1032,11 @@ uint off;
 					return &inner[0];
 			}
 
+			judy->level--;
 			continue;
 
 		case JUDY_span:
+			judy->level--;
 			continue;
 		}
 	}
@@ -1068,14 +1070,12 @@ uchar *base;
 			size += 16;
 		case JUDY_16:
 			size += 8;
-#ifndef __LP64__
-		case JUDY_8_OR_16:
-#endif
+		case JUDY_8:
 			size += 8;
 			keysize = KEY_BYTES - (off & B8(00000011));
 			cnt = size / (sizeof(uint) + keysize);
-			node = (uint *)((next & ~(uint)B8(00000111)) + size);
-			base = (uchar *)(next & ~(uint)B8(00000111));
+			node = (uint *)((next & JUDY_mask) + size);
+			base = (uchar *)(next & JUDY_mask);
 			while( slot ) {
 				node[-slot-1] = node[-slot];
 				memcpy (base + slot * keysize, base + (slot - 1) * keysize, keysize);
@@ -1089,8 +1089,8 @@ uchar *base;
 			continue;
 
 		case JUDY_radix:
-			table = (uint  *)(next & ~(uint)B8(00000111));
-			inner = (uint *)(table[slot >> 4] & ~(uint)B8(00000111));
+			table = (uint  *)(next & JUDY_mask);
+			inner = (uint *)(table[slot >> 4] & JUDY_mask);
 			inner[slot & B8(00001111)] = 0;
 
 			for( cnt = 0; cnt < 16; cnt++ )
@@ -1108,7 +1108,7 @@ uchar *base;
 			continue;
 
 		case JUDY_span:
-			base = (uchar *)(next & ~(uint)B8(00000111));
+			base = (uchar *)(next & JUDY_mask);
 			judy_free (judy, base, type);
 			continue;
 		}
@@ -1131,14 +1131,6 @@ uint *cell;
 	return judy_nxt (judy);
 }
 
-//	return cell for the key with the highest value
-
-uint *judy_end (Judy *judy)
-{
-	judy->level = 0;
-	return judy_last(judy, *judy->root, 0);
-}
-
 //	split open span node
 
 void judy_splitspan (Judy *judy, uint *next, uchar *base)
@@ -1149,8 +1141,8 @@ uchar *newbase;
 uint off = 0;
 
 	do {
-		newbase = judy_alloc (judy, JUDY_8_OR_16);
-		*next = (uint)newbase | JUDY_8_OR_16;
+		newbase = judy_alloc (judy, JUDY_8);
+		*next = (uint)newbase | JUDY_8;
 
 #if BYTE_ORDER != BIG_ENDIAN
 		*newbase++ = base[off + 3];
@@ -1158,8 +1150,8 @@ uint off = 0;
 		*newbase++ = base[off + 1];
 		*newbase++ = base[off + 0];
 #else
-		memcpy (newbase, base + off, 4);
-		newbase += 4;
+		memcpy (newbase, base + off, KEY_BYTES);
+		newbase += KEY_BYTES;
 #endif
 		next = (uint *)newbase;
 
@@ -1186,7 +1178,14 @@ uint keysize;
 uint *table;
 uint *node;
 
+	judy->level = 0;
+
 	while( *next ) {
+		if( judy->level < judy->max )
+			judy->level++;
+
+		judy->stack[judy->level].off = off;
+		judy->stack[judy->level].next = *next;
 		size = 0;
 
 		switch( *next & B8(00000111) ) {
@@ -1201,14 +1200,12 @@ uint *node;
 			size += 16;
 		case JUDY_16:
 			size += 8;
-#ifndef __LP64__
-		case JUDY_8_OR_16:
-#endif
+		case JUDY_8:
 			size += 8;
 			keysize = KEY_BYTES - (off & B8(00000011));
 			cnt = size / (sizeof(uint) + keysize);
-			base = (uchar *)(*next & ~(uint)B8(00000111));
-			node = (uint *)((*next & ~(uint)B8(00000111)) + size);
+			base = (uchar *)(*next & JUDY_mask);
+			node = (uint *)((*next & JUDY_mask) + size);
 			start = off;
 			slot = cnt;
 			value = 0;
@@ -1225,7 +1222,7 @@ uint *node;
 			case 4:			// 4 byte keys
 				judyuint = (uint32_t *)base;
 				while( slot-- )
-					if( test = judyuint[slot], test <= value )
+					if( (test = judyuint[slot]), test <= value )
 						break;
 
 				break;
@@ -1251,7 +1248,7 @@ uint *node;
 			case 2:			// 2 byte keys
 				judyushort = (ushort *)base;
 				while( slot-- )
-					if( test = judyushort[slot], test <= value )
+					if( (test = judyushort[slot]), test <= value )
 						break;
 
 				break;
@@ -1259,11 +1256,13 @@ uint *node;
 			case 1:			// 1 byte keys
 				judyuchar = base;
 				while( slot-- )
-					if( test = judyuchar[slot], test <= value )
+					if( (test = judyuchar[slot]), test <= value )
 						break;
 
 				break;
 			}
+
+			judy->stack[judy->level].slot = slot - 1;
 
 			if( test == value ) {		// new key is equal to slot key
 				next = &node[-slot-1];
@@ -1315,11 +1314,12 @@ uint *node;
 			//  loop to reprocess new insert
 
 			judy_splitnode (judy, next, size, keysize, JUDY_max);
+			judy->level--;
 			off = start;
 			continue;
 		
 		case JUDY_radix:
-			table = (uint  *)(*next & ~(uint)B8(00000111)); // outer radix
+			table = (uint  *)(*next & JUDY_mask); // outer radix
 
 			if( off < max )
 				slot = buff[off++];
@@ -1331,7 +1331,8 @@ uint *node;
 			if( !table[slot >> 4] )
 				table[slot >> 4] = (uint)judy_alloc (judy, JUDY_radix) | JUDY_radix;
 
-			table = (uint *)(table[slot >> 4] & ~(uint)B8(00000111));
+			table = (uint *)(table[slot >> 4] & JUDY_mask);
+			judy->stack[judy->level].slot = slot;
 			next = &table[slot & B8(00001111)];
 
 			if( !slot ) // leaf?
@@ -1339,8 +1340,8 @@ uint *node;
 			continue;
 
 		case JUDY_span:
-			base = (uchar *)(*next & ~(uint)B8(00000111));
-			node = (uint *)((*next & ~(uint)B8(00000111)) + JUDY_span_SIZE);
+			base = (uchar *)(*next & JUDY_mask);
+			node = (uint *)((*next & JUDY_mask) + JUDY_span_SIZE);
 			cnt = JUDY_span_SIZE - sizeof(uint);	// number of bytes
 			tst = cnt;
 
@@ -1358,21 +1359,22 @@ uint *node;
 				continue;
 			}
 
-			//	bust up JUDY_span node and produce JUDY_8_OR_16 nodes
+			//	bust up JUDY_span node and produce JUDY_8 nodes
 			//	then loop to reprocess insert
 
 			judy_splitspan (judy, next, base);
+			judy->level--;
 			continue;
 		}
 	}
 
-	// place JUDY_8_OR_16 node under JUDY_radix node(s)
+	// place JUDY_8 node under JUDY_radix node(s)
 
 	if( off & B8(00000011) && off <= max ) {
-		base = judy_alloc (judy, JUDY_8_OR_16);
+		base = judy_alloc (judy, JUDY_8);
 		keysize = KEY_BYTES - (off & B8(00000011));
 		node = (uint  *)(base + 8);
-		*next = (uint)base | JUDY_8_OR_16;
+		*next = (uint)base | JUDY_8;
 
 		//	fill in slot 0 with bytes of key
 
@@ -1390,6 +1392,12 @@ uint *node;
 
 		memcpy (base, buff + off, tst);
 #endif
+		if( judy->level < judy->max )
+			judy->level++;
+
+		judy->stack[judy->level].next = *next;
+		judy->stack[judy->level].slot = 0;
+		judy->stack[judy->level].off = off;
 		next = &node[-1];
 		off |= B8(00000011);
 		off++;
@@ -1405,6 +1413,14 @@ uint *node;
 		if( tst > (int)(max - off) )
 			tst = max - off;
 		memcpy (base, buff + off, tst);
+
+		if( judy->level < judy->max )
+			judy->level++;
+
+		judy->stack[judy->level].next = *next;
+		judy->stack[judy->level].slot = 0;
+		judy->stack[judy->level].off = off;
+
 		next = &node[-1];
 		off += tst;
 		if( !base[cnt-1] )	// done on leaf
