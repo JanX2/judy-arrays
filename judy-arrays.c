@@ -60,6 +60,8 @@ typedef uint32_t uint;
 
 #if defined(__LP64__) || \
 	defined(__x86_64__) || \
+	defined(__amd64__) || \
+	defined(_WIN64) || \
 	defined(__sparc64__) || \
 	defined(__arch64__) || \
 	defined(__powerpc64__) || \
