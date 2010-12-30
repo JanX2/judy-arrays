@@ -852,6 +852,9 @@ judyslot next;
 uchar *base;
 uint off;
 
+	if( !judy->level )
+		return judy_last (judy, *judy->root, 0);
+	
 	while( judy->level ) {
 		next = judy->stack[judy->level].next;
 		slot = judy->stack[judy->level].slot;
