@@ -45,7 +45,7 @@
 		#endif
 	#else
 		#ifndef BYTE_ORDER
-			#define BYTE_ORDER 4321
+			#define BYTE_ORDER 1234
 		#endif
 	#endif
 	#ifndef BIG_ENDIAN
