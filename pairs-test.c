@@ -10,7 +10,13 @@
 #include <stdio.h>
 #include "judy-arrays.c"
 
-#ifdef __LP64__
+#if defined(__LP64__) || \
+	defined(__x86_64__) || \
+	defined(__sparc64__) || \
+	defined(__arch64__) || \
+	defined(__powerpc64__) || \
+	defined (__s390x__) 
+
 	#define BOTTOM_UP_SIZE	9
 	#define BOTTOM_UP_LAST	8
 	#define BOTTOM_UP_ALL_ZEROS	0x00

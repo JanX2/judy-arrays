@@ -58,7 +58,12 @@ typedef uint8_t uchar;
 typedef uint32_t uint;
 #define PRIuint			PRIu32
 
-#ifdef __LP64__
+#if defined(__LP64__) || \
+	defined(__x86_64__) || \
+	defined(__sparc64__) || \
+	defined(__arch64__) || \
+	defined(__powerpc64__) || \
+	defined (__s390x__) 
 	//	defines for 64 bit
 	
 	typedef uint64_t judyvalue;
