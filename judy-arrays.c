@@ -297,7 +297,7 @@ void judy_free (Judy *judy, void *block, int type)
 
 uint judy_key (Judy *judy, uchar *buff, uint max)
 {
-int slot, cnt, size, off, type;
+int slot, cnt, /*size, */off, type;
 uint len = 0, idx = 0;
 uchar *base;
 int keysize;
@@ -307,7 +307,7 @@ int keysize;
 	while( len < max && ++idx <= judy->level ) {
 		slot = judy->stack[idx].slot;
 		type = judy->stack[idx].next & B8(00000111);
-		size = JudySize[type];
+		//size = JudySize[type];
 		switch( type ) {
 		case JUDY_1:
 		case JUDY_2:
@@ -353,7 +353,7 @@ judyslot *judy_slot (Judy *judy, uchar *buff, uint max)
 int slot, size, keysize, tst;
 judyslot next = *judy->root;
 judyvalue value, test;
-uint off = 0, start;
+uint off = 0/*, start*/;
 judyslot *table;
 judyslot *node;
 uchar *base;
@@ -381,7 +381,7 @@ int cnt;
 			node = (judyslot *)((next & JUDY_mask) + size);
 			keysize = JUDY_key_size - (off & JUDY_key_mask);
 			cnt = size / (sizeof(judyslot) + keysize);
-			start = off;
+			//start = off;
 			slot = cnt;
 			value = 0;
 
