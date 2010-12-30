@@ -91,7 +91,7 @@ typedef uint32_t uint;
 
 #endif
 
-#define JUDY_mask (~(uint)B8(00000111))
+#define JUDY_mask (~(judyslot)(B8(00000111)))
 
 #ifdef STANDALONE
 #include <stdio.h>
