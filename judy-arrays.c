@@ -34,8 +34,6 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-#include "binary_macros.h"
-
 #ifdef linux
 	#include <endian.h>
 #else
@@ -70,7 +68,7 @@ typedef uint32_t uint;
 	
 	typedef uint64_t judyvalue;
 	typedef uint64_t judyslot;
-	#define JUDY_key_mask (B8(00000111))
+	#define JUDY_key_mask (0x07)
 	#define JUDY_key_size 8
 	#define JUDY_slot_size 8
 	#define JUDY_span_bytes (3 * JUDY_key_size)
@@ -82,7 +80,7 @@ typedef uint32_t uint;
 	
 	typedef uint32_t judyvalue;
 	typedef uint32_t judyslot;
-	#define JUDY_key_mask (B8(00000011))
+	#define JUDY_key_mask (0x03)
 	#define JUDY_key_size 4
 	#define JUDY_slot_size 4
 	#define JUDY_span_bytes (7 * JUDY_key_size)
@@ -91,7 +89,7 @@ typedef uint32_t uint;
 
 #endif
 
-#define JUDY_mask (~(judyslot)(B8(00000111)))
+#define JUDY_mask (~(judyslot)0x07)
 
 #ifdef STANDALONE
 #include <stdio.h>
@@ -202,8 +200,8 @@ uint amt;
 	MaxMem += JUDY_seg;
 #endif
 
-	if( amt & B8(00000111) )
-		amt |= B8(00000111), amt++;
+	if( amt & 0x07 )
+		amt |= 0x07, amt++;
 
 	seg->next -= amt;
 	judy = (Judy *)((uchar *)seg + seg->next);
@@ -231,8 +229,8 @@ uint amt;
 
 	amt = JudySize[type];
 
-	if( amt & B8(00000111) )
-		amt |= B8(00000111), amt += 1;
+	if( amt & 0x07 )
+		amt |= 0x07, amt += 1;
 
 	if( (block = judy->reuse[type]) ) {
 		judy->reuse[type] = *block;
@@ -268,8 +266,8 @@ void *judy_data (Judy *judy, uint amt)
 JudySeg *seg;
 void *block;
 
-	if( amt & B8(00000111) )
-		amt |= B8(00000111), amt += 1;
+	if( amt & 0x07 )
+		amt |= 0x07, amt += 1;
 
 	if( !judy->seg || judy->seg->next < amt + sizeof(*seg) ) {
 		if( (seg = valloc (JUDY_seg)) ) {
@@ -313,7 +311,7 @@ int keysize;
 
 	while( len < max && ++idx <= judy->level ) {
 		slot = judy->stack[idx].slot;
-		type = judy->stack[idx].next & B8(00000111);
+		type = judy->stack[idx].next & 0x07;
 		//size = JudySize[type];
 		switch( type ) {
 		case JUDY_1:
@@ -374,9 +372,9 @@ int cnt;
 
 		judy->stack[judy->level].off = off;
 		judy->stack[judy->level].next = next;
-		size = JudySize[next & B8(00000111)];
+		size = JudySize[next & 0x07];
 
-		switch( next & B8(00000111) ) {
+		switch( next & 0x07 ) {
 
 		case JUDY_1:
 		case JUDY_2:
@@ -444,9 +442,9 @@ int cnt;
 				return 0;
 
 			if( !slot )	// leaf?
-				return &table[slot & B8(00001111)];
+				return &table[slot & 0x0F];
 
-			next = table[slot & B8(00001111)];
+			next = table[slot & 0x0F];
 			off += 1;
 			break;
 
@@ -486,7 +484,7 @@ judyslot *result;
 uchar *newbase;
 uint type;
 
-	type = (*next & B8(00000111)) + 1;
+	type = (*next & 0x07) + 1;
 	node = (judyslot *)((*next & JUDY_mask) + JudySize[type-1]);
 	oldcnt = JudySize[type-1] / (sizeof(judyslot) + keysize);
 	newcnt = JudySize[type] / (sizeof(judyslot) + keysize);
@@ -553,7 +551,7 @@ uchar *base;
 	// is this slot a leaf?
 
 	if( !key || !keysize ) {
-		table[key & B8(00001111)] = oldnode[-start-1];
+		table[key & 0x0F] = oldnode[-start-1];
 		return;
 	}
 
@@ -569,7 +567,7 @@ uchar *base;
 
 	base = judy_alloc (judy, type);
 	node = (judyslot *)(base + size);
-	table[key & B8(00001111)] = (judyslot)base | type;
+	table[key & 0x0F] = (judyslot)base | type;
 
 	//	allocate node and copy old contents
 	//	shorten keys by 1 byte during copy
@@ -589,7 +587,7 @@ uchar *base;
 void judy_splitnode (Judy *judy, judyslot *next, uint size, uint keysize)
 {
 int cnt, slot, start = 0;
-uint key = B16(00000001,00000000), nxt;
+uint key = 0x0100, nxt;
 judyslot *newradix;
 //judyslot *node;
 uchar *base;
@@ -610,7 +608,7 @@ uchar *base;
 		nxt = base[slot * keysize];
 #endif
 
-		if( key > B8(11111111) )
+		if( key > 0xFF )
 			key = nxt;
 		if( nxt == key )
 			continue;
@@ -642,9 +640,9 @@ judyslot *node;
 
 		judy->stack[judy->level].off = off;
 		judy->stack[judy->level].next = next;
-		size = JudySize[next & B8(00000111)];
+		size = JudySize[next & 0x07];
 
-		switch( next & B8(00000111) ) {
+		switch( next & 0x07 ) {
 		case JUDY_1:
 		case JUDY_2:
 		case JUDY_4:
@@ -675,15 +673,15 @@ judyslot *node;
 			table = (judyslot *)(next & JUDY_mask);
 			for( slot = 0; slot < 256; slot++ )
 			  if( (inner = (judyslot *)(table[slot >> 4] & JUDY_mask)) ) {
-				if( (next = inner[slot & B8(00001111)]) ) {
+				if( (next = inner[slot & 0x0F]) ) {
 				  judy->stack[judy->level].slot = slot;
 				  if( !slot )
-					return &inner[slot & B8(00001111)];
+					return &inner[slot & 0x0F];
 				  else
 					break;
 				}
 			  } else
-				slot |= B8(00001111);
+				slot |= 0x0F;
 			off++;
 			continue;
 		case JUDY_span:
@@ -716,8 +714,8 @@ uchar *base;
 
 		judy->stack[judy->level].off = off;
 		judy->stack[judy->level].next = next;
-		size = JudySize[next & B8(00000111)];
-		switch( next & B8(00000111) ) {
+		size = JudySize[next & 0x07];
+		switch( next & 0x07 ) {
 		case JUDY_1:
 		case JUDY_2:
 		case JUDY_4:
@@ -745,13 +743,13 @@ uchar *base;
 			for( slot = 256; slot--; ) {
 			  judy->stack[judy->level].slot = slot;
 			  if( (inner = (judyslot *)(table[slot >> 4] & JUDY_mask)) ) {
-				if( (next = inner[slot & B8(00001111)]) )
+				if( (next = inner[slot & 0x0F]) )
 				  if( !slot )
 					return &inner[0];
 				  else
 					break;
 			  } else
-				slot &= B8(11110000);
+				slot &= 0xF0;
 			}
 			off++;
 			continue;
@@ -798,9 +796,9 @@ uint off;
 		slot = judy->stack[judy->level].slot;
 		off = judy->stack[judy->level].off;
 		keysize = JUDY_key_size - (off & JUDY_key_mask);
-		size = JudySize[next & B8(00000111)];
+		size = JudySize[next & 0x07];
 
-		switch( next & B8(00000111) ) {
+		switch( next & 0x07 ) {
 		case JUDY_1:
 		case JUDY_2:
 		case JUDY_4:
@@ -831,12 +829,12 @@ uint off;
 
 			while( ++slot < 256 )
 			  if( (inner = (judyslot *)(table[slot >> 4] & JUDY_mask)) ) {
-				if( inner[slot & B8(00001111)] ) {
+				if( inner[slot & 0x0F] ) {
 				  judy->stack[judy->level].slot = slot;
-				  return judy_first(judy, inner[slot & B8(00001111)], off + 1);
+				  return judy_first(judy, inner[slot & 0x0F], off + 1);
 				}
 			  } else
-				slot |= B8(00001111);
+				slot |= 0x0F;
 
 			judy->level--;
 			continue;
@@ -867,9 +865,9 @@ uint off;
 		next = judy->stack[judy->level].next;
 		slot = judy->stack[judy->level].slot;
 		off = judy->stack[judy->level].off;
-		size = JudySize[next & B8(00000111)];
+		size = JudySize[next & 0x07];
 
-		switch( next & B8(00000111) ) {
+		switch( next & 0x07 ) {
 		case JUDY_1:
 		case JUDY_2:
 		case JUDY_4:
@@ -901,9 +899,9 @@ uint off;
 			while( slot-- ) {
 			  judy->stack[judy->level].slot--;
 			  if( (inner = (judyslot *)(table[slot >> 4] & JUDY_mask)) )
-				if( inner[slot & B8(00001111)] )
+				if( inner[slot & 0x0F] )
 				  if( slot )
-				    return judy_last(judy, inner[slot & B8(00001111)], off + 1);
+				    return judy_last(judy, inner[slot & 0x0F], off + 1);
 				  else
 					return &inner[0];
 			}
@@ -933,9 +931,9 @@ uchar *base;
 		next = judy->stack[judy->level].next;
 		slot = judy->stack[judy->level].slot;
 		off = judy->stack[judy->level--].off;
-		size = JudySize[next & B8(00000111)];
+		size = JudySize[next & 0x07];
 
-		switch( type = next & B8(00000111) ) {
+		switch( type = next & 0x07 ) {
 		case JUDY_1:
 		case JUDY_2:
 		case JUDY_4:
@@ -961,7 +959,7 @@ uchar *base;
 		case JUDY_radix:
 			table = (judyslot  *)(next & JUDY_mask);
 			inner = (judyslot *)(table[slot >> 4] & JUDY_mask);
-			inner[slot & B8(00001111)] = 0;
+			inner[slot & 0x0F] = 0;
 
 			for( cnt = 0; cnt < 16; cnt++ )
 				if( inner[cnt] )
@@ -1056,9 +1054,9 @@ uchar *base;
 
 		judy->stack[judy->level].off = off;
 		judy->stack[judy->level].next = *next;
-		size = JudySize[*next & B8(00000111)];
+		size = JudySize[*next & 0x07];
 
-		switch( *next & B8(00000111) ) {
+		switch( *next & 0x07 ) {
 		case JUDY_1:
 		case JUDY_2:
 		case JUDY_4:
@@ -1099,7 +1097,7 @@ uchar *base;
 
 				// is this a leaf?
 
-				if( !(value & B8(11111111)) )
+				if( !(value & 0xFF) )
 					return next;
 
 				continue;
@@ -1125,7 +1123,7 @@ uchar *base;
 			  node[-slot-1] = 0;			// set new tree ptr/cell
 			  next = &node[-slot-1];
 
-			  if( !(value & B8(11111111)) )
+			  if( !(value & 0xFF) )
 			  	return next;
 
 			  continue;
@@ -1134,7 +1132,7 @@ uchar *base;
 			if( size < JudySize[JUDY_max] ) {
 			  next = judy_promote (judy, next, slot+1, value, keysize);
 
-			  if( !(value & B8(11111111)) )
+			  if( !(value & 0xFF) )
 				return next;
 
 			  continue;
@@ -1163,7 +1161,7 @@ uchar *base;
 
 			table = (judyslot *)(table[slot >> 4] & JUDY_mask);
 			judy->stack[judy->level].slot = slot;
-			next = &table[slot & B8(00001111)];
+			next = &table[slot & 0x0F];
 
 			if( !slot ) // leaf?
 				return next;

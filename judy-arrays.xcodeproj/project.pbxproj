@@ -27,7 +27,6 @@
 
 /* Begin PBXFileReference section */
 		3DB3623512B379AA0036C0E1 /* judy-arrays.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "judy-arrays.c"; sourceTree = "<group>"; };
-		3DB3641712B76F820036C0E1 /* binary_macros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = binary_macros.h; sourceTree = "<group>"; };
 		3DE7835412C5F4D90046031C /* pairs-test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "pairs-test"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3DE7835D12C5F52B0046031C /* pairs-test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "pairs-test.c"; sourceTree = "<group>"; };
 		8DD76FB20486AB0100D96B5E /* judy-arrays */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "judy-arrays"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -66,7 +65,6 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				3DB3641712B76F820036C0E1 /* binary_macros.h */,
 				3DB3623512B379AA0036C0E1 /* judy-arrays.c */,
 			);
 			name = Source;
