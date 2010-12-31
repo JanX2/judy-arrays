@@ -359,7 +359,7 @@ judyslot *judy_slot (Judy *judy, uchar *buff, uint max)
 {
 int slot, size, keysize, tst;
 judyslot next = *judy->root;
-judyvalue value, test;
+judyvalue value, test = 0;
 uint off = 0/*, start*/;
 judyslot *table;
 judyslot *node;
