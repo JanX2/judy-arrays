@@ -1333,8 +1333,8 @@ uint idx;
 #if 1
 	// test deletion all the way to an empty tree
 
-	if( cell = judy_prv (judy) )
-		while( cell = judy_del (judy) );
+	if( (cell = judy_prv (judy)) )
+		while( (cell = judy_del (judy)) );
 #endif
 
 	judy_close(judy);
