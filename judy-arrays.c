@@ -105,7 +105,10 @@ typedef uint32_t uint;
 
 uint MaxMem = 0;
 
+#if !defined(WIN32)
 void judy_abort (char *msg) __attribute__ ((noreturn)); // Tell static analyser that this function will not return
+#endif
+
 void judy_abort (char *msg)
 {
 	fprintf(stderr, "%s\n", msg);
