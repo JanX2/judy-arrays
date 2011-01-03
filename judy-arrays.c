@@ -432,7 +432,7 @@ uchar *base;
 				continue;
 			}
 
-			return 0;
+			return NULL;
 
 		case JUDY_radix:
 			table = (judyslot  *)(next & JUDY_mask); // outer radix
@@ -449,7 +449,7 @@ uchar *base;
 			if( (next = table[slot >> 4]) )
 				table = (judyslot  *)(next & JUDY_mask); // inner radix
 			else
-				return 0;
+				return NULL;
 
 			if( !slot )	// leaf?
 				return &table[slot & 0x0F];
@@ -473,11 +473,11 @@ uchar *base;
 				off += cnt;
 				continue;
 			}
-			return 0;
+			return NULL;
 		}
 	}
 
-	return 0;
+	return NULL;
 }
 
 //	promote full nodes to next larger size
@@ -703,7 +703,7 @@ uchar *base;
 			continue;
 		}
 	}
-	return 0;
+	return NULL;
 }
 
 //	return last leaf cell pointer
@@ -772,7 +772,7 @@ uchar *base;
 			continue;
 		}
 	}
-	return 0;
+	return NULL;
 }
 
 //	judy_end: return last entry
@@ -850,7 +850,7 @@ uint off;
 			continue;
 		}
 	}
-	return 0;
+	return NULL;
 }
 
 //	judy_prv: return ptr to previous entry
@@ -920,7 +920,7 @@ uint off;
 			continue;
 		}
 	}
-	return 0;
+	return NULL;
 }
 
 //	judy_del: delete string from judy array
@@ -1006,7 +1006,7 @@ uchar *base;
 	//	tree is now empty
 
 	*judy->root = 0;
-	return 0;
+	return NULL;
 }
 
 //	return cell for first key greater than or equal to given key
