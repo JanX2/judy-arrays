@@ -24,7 +24,7 @@
 //	judy_end:	retrieve the cell pointer for the last string in the array.
 //	judy_nxt:	retrieve the cell pointer for the next string in the array.
 //	judy_prv:	retrieve the cell pointer for the prev string in the array.
-//	judy_del:	delete the key and cell for the most recent judy query.
+//	judy_del:	delete the key and cell for the current stack entry.
 
 #include <stdlib.h>
 #ifdef HAVE_MALLOC_H
@@ -116,12 +116,12 @@ void judy_abort (char *msg)
 }
 #endif
 
-#if !defined(WIN32)
+#if !defined(_WIN32)
 void vfree (void *what, uint size)
 {
 	free (what);
 }
-#elif defined(WIN32)
+#elif defined(_WIN32)
 #include <windows.h>
 
 void *valloc (uint size)
@@ -367,14 +367,13 @@ int keysize;
 
 judyslot *judy_slot (Judy *judy, uchar *buff, uint max)
 {
-int slot, size, keysize, tst;
+int slot, size, keysize, tst, cnt;
 judyslot next = *judy->root;
 judyvalue value, test = 0;
-uint off = 0/*, start*/;
 judyslot *table;
 judyslot *node;
+uint off = 0;
 uchar *base;
-int cnt;
 
 	judy->level = 0;
 
@@ -398,7 +397,6 @@ int cnt;
 			node = (judyslot *)((next & JUDY_mask) + size);
 			keysize = JUDY_key_size - (off & JUDY_key_mask);
 			cnt = size / (sizeof(judyslot) + keysize);
-			//start = off;
 			slot = cnt;
 			value = 0;
 
@@ -601,12 +599,10 @@ void judy_splitnode (Judy *judy, judyslot *next, uint size, uint keysize)
 int cnt, slot, start = 0;
 uint key = 0x0100, nxt;
 judyslot *newradix;
-//judyslot *node;
 uchar *base;
 
 	base = (uchar  *)(*next & JUDY_mask);
 	cnt = size / (sizeof(judyslot) + keysize);
-	//node = (judyslot *)(base + size);
 
 	//	allocate outer judy_radix node
 
@@ -642,9 +638,9 @@ judyslot *judy_first (Judy *judy, judyslot next, uint off)
 {
 judyslot *table, *inner;
 uint keysize, size;
+judyslot *node;
 int slot, cnt;
 uchar *base;
-judyslot *node;
 
 	while( next ) {
 		if( judy->level < judy->max )
@@ -795,7 +791,6 @@ judyslot *table, *inner;
 int slot, size, cnt;
 judyslot *node;
 judyslot next;
-//uint idx = 0;
 uint keysize;
 uchar *base;
 uint off;
@@ -866,7 +861,6 @@ int slot, size, keysize;
 judyslot *table, *inner;
 judyslot *node;
 judyslot next;
-//uint idx = 0;
 uchar *base;
 uint off;
 
@@ -930,10 +924,11 @@ uint off;
 }
 
 //	judy_del: delete string from judy array
+//		returning previous entry.
 
-void judy_del (Judy *judy)
+judyslot *judy_del (Judy *judy)
 {
-int slot, off, size, type;
+int slot, off, size, type, high;
 judyslot *table, *inner;
 judyslot next, *node;
 int keysize, cnt;
@@ -942,7 +937,7 @@ uchar *base;
 	while( judy->level ) {
 		next = judy->stack[judy->level].next;
 		slot = judy->stack[judy->level].slot;
-		off = judy->stack[judy->level--].off;
+		off = judy->stack[judy->level].off;
 		size = JudySize[next & 0x07];
 
 		switch( type = next & 0x07 ) {
@@ -956,40 +951,54 @@ uchar *base;
 			cnt = size / (sizeof(judyslot) + keysize);
 			node = (judyslot *)((next & JUDY_mask) + size);
 			base = (uchar *)(next & JUDY_mask);
+
+			//	move deleted slot to first slot
+
 			while( slot ) {
 				node[-slot-1] = node[-slot];
 				memcpy (base + slot * keysize, base + (slot - 1) * keysize, keysize);
 				slot--;
 			}
+
+			//	zero out first slot
+
 			node[-1] = 0;
 			memset (base, 0, keysize);
-			if( node[-cnt] )
-				return;
+
+			if( node[-cnt] ) {	// does node have any slots left?
+				judy->stack[judy->level].slot++;
+				return judy_prv (judy);
+			}
+
 			judy_free (judy, base, type);
+			judy->level--;
 			continue;
 
 		case JUDY_radix:
 			table = (judyslot  *)(next & JUDY_mask);
 			inner = (judyslot *)(table[slot >> 4] & JUDY_mask);
 			inner[slot & 0x0F] = 0;
+			high = slot & 0xF0;
 
-			for( cnt = 0; cnt < 16; cnt++ )
+			for( cnt = 16; cnt--; )
 				if( inner[cnt] )
-					return;
+					return judy_prv (judy);
 
 			judy_free (judy, inner, JUDY_radix);
 			table[slot >> 4] = 0;
 
-			for( cnt = 0; cnt < 16; cnt++ )
+			for( cnt = 16; cnt--; )
 				if( table[cnt] )
-					return;
+					return judy_prv (judy);
 
 			judy_free (judy, table, JUDY_radix);
+			judy->level--;
 			continue;
 
 		case JUDY_span:
 			base = (uchar *)(next & JUDY_mask);
 			judy_free (judy, base, type);
+			judy->level--;
 			continue;
 		}
 	}
@@ -997,6 +1006,7 @@ uchar *base;
 	//	tree is now empty
 
 	*judy->root = 0;
+	return 0;
 }
 
 //	return cell for first key greater than or equal to given key
@@ -1004,6 +1014,9 @@ uchar *base;
 judyslot *judy_strt (Judy *judy, uchar *buff, uint max)
 {
 judyslot *cell;
+
+	if( !max )
+		return judy_first (judy, *judy->root, 0);
 
 	if( (cell = judy_slot (judy, buff, max)) )
 		return cell;
@@ -1273,10 +1286,10 @@ uchar *base;
 int main (int argc, char **argv)
 {
 uchar buff[1024];
+judyslot *cell;
 FILE *in, *out;
 uint max = 0;
 void *judy;
-judyslot *cell;
 uint len;
 uint idx;
 
@@ -1310,28 +1323,21 @@ uint idx;
 	cell = judy_strt (judy, NULL, 0);
 
 	if( cell ) do {
-		/*len = */judy_key(judy, buff, sizeof(buff));
+		judy_key(judy, buff, sizeof(buff));
 		for( idx = 0; idx < *cell; idx++ )		// spit out duplicates
 			fprintf(out, "%s\n", buff);
 	} while( (cell = judy_nxt (judy)) );
 
 	fprintf(stderr, "%" PRIuint " memory used\n", MaxMem);
 
-#if 0
-	// test deletion to empty tree
+#if 1
+	// test deletion all the way to an empty tree
 
-	rewind (in);
-
-	while( fgets(buff, sizeof(buff), in) ) {
-		len = strlen(buff);
-		buff[--len] = 0;
-		if( len && buff[len - 1] == 0x0d )
-			buff[--len] = 0;
-		if( judy_slot (judy, buff, len) )
-			judy_del (judy);
-	}
+	if( cell = judy_prv (judy) )
+		while( cell = judy_del (judy) );
 #endif
+
 	judy_close(judy);
 	return 0;
 }
-#endif
+#endif // of STANDALONE
