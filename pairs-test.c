@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
 	judyvalue value;					// array element value
 	judyslot *cell;						// pointer to array element value
 	
-	void *judy;							// poiner to Judy array
+	void *judy;							// pointer to Judy array
 	
 	if( argc > 1 )
 		in = fopen(argv[1], "r");
@@ -141,6 +141,7 @@ int main(int argc, char **argv) {
 			}
 		}
 	}
+	
 	// Next, visit all the stored indexes in sorted order, first ascending,
 	// then descending, and delete each index during the descending pass.
 	
