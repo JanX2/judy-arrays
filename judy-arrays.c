@@ -30,7 +30,7 @@
 #include <memory.h>
 #include <limits.h>
 
-#if defined(WIN32)
+#if defined(_WIN32)
 	typedef unsigned char         uint8_t;
 	typedef unsigned short       uint16_t;
 	typedef unsigned int         uint32_t;
@@ -107,7 +107,7 @@ typedef uint32_t uint;
 
 uint MaxMem = 0;
 
-#if !defined(WIN32)
+#if !defined(_WIN32)
 void judy_abort (char *msg) __attribute__ ((noreturn)); // Tell static analyser that this function will not return
 #endif
 
