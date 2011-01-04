@@ -147,7 +147,6 @@ int main(int argc, char **argv) {
 	
 	index = 0;
 	cell = judy_strt(judy, NULL, 0);
-	cell = judy_nxt(judy);
 	while (cell != NULL)
 	{
 		judy_key(judy, (uchar *)buff, sizeof(buff));
