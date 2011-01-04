@@ -27,10 +27,8 @@
 //	judy_del:	delete the key and cell for the current stack entry.
 
 #include <stdlib.h>
-#ifdef HAVE_MALLOC_H
-	#include <malloc.h>
-#endif
 #include <memory.h>
+#include <limits.h>
 
 #if defined(WIN32)
 	typedef unsigned char         uint8_t;
@@ -60,7 +58,6 @@
 	#endif
 #endif
 
-typedef uint16_t ushort;
 typedef uint8_t uchar;
 typedef uint32_t uint;
 #define PRIuint			PRIu32
@@ -98,10 +95,15 @@ typedef uint32_t uint;
 
 #endif
 
+#if CHAR_BIT != 8
+#error("Non 8-bit character size not supported")
+#endif
+
 #define JUDY_mask (~(judyslot)0x07)
 
 #ifdef STANDALONE
 #include <stdio.h>
+#include <assert.h>
 
 uint MaxMem = 0;
 
@@ -1286,9 +1288,9 @@ uchar *base;
 int main (int argc, char **argv)
 {
 uchar buff[1024];
+judyslot max = 0;
 judyslot *cell;
 FILE *in, *out;
-uint max = 0;
 void *judy;
 uint len;
 uint idx;
@@ -1333,10 +1335,14 @@ uint idx;
 #if 1
 	// test deletion all the way to an empty tree
 
-	if( (cell = judy_prv (judy)) )
-		while( (cell = judy_del (judy)) );
+	if( (cell = judy_prv (judy)) ) {
+		do {
+			max -= *cell;
+		} while( (cell = judy_del (judy)) );
+	}
+	
+	assert (max == 0);
 #endif
-
 	judy_close(judy);
 	return 0;
 }
