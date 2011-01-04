@@ -1017,6 +1017,8 @@ judyslot *judy_strt (Judy *judy, uchar *buff, uint max)
 {
 judyslot *cell;
 
+	judy->level = 0;
+	
 	if( !max )
 		return judy_first (judy, *judy->root, 0);
 
