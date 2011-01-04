@@ -176,8 +176,8 @@ int main(int argc, char **argv) {
 		if (value == -1) value = 0;
 		printf("%"PRIjudyvalue " %"PRIjudyvalue "\n", index, value);
 		
-		//judy_del(judy);
-		cell = judy_prv(judy);
+		cell = judy_del(judy);
+		//cell = judy_prv(judy);
 	}
 
 	return 0;
