@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3D8072DD12E9161300DDD165 /* distance-test.c in Sources */ = {isa = PBXBuildFile; fileRef = 3D8072B312E914D700DDD165 /* distance-test.c */; };
 		3DB3623612B379AA0036C0E1 /* judy-arrays.c in Sources */ = {isa = PBXBuildFile; fileRef = 3DB3623512B379AA0036C0E1 /* judy-arrays.c */; };
 		3DE7835E12C5F52B0046031C /* pairs-test.c in Sources */ = {isa = PBXBuildFile; fileRef = 3DE7835D12C5F52B0046031C /* pairs-test.c */; };
 		8DD76FB00486AB0100D96B5E /* judy-arrays.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = C6A0FF2C0290799A04C91782 /* judy-arrays.1 */; };
@@ -26,6 +27,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3D8072B312E914D700DDD165 /* distance-test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "distance-test.c"; sourceTree = "<group>"; };
+		3D8072D212E915DA00DDD165 /* distance-test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "distance-test"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3DB3623512B379AA0036C0E1 /* judy-arrays.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "judy-arrays.c"; sourceTree = "<group>"; };
 		3DE7835412C5F4D90046031C /* pairs-test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "pairs-test"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3DE7835D12C5F52B0046031C /* pairs-test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "pairs-test.c"; sourceTree = "<group>"; };
@@ -34,6 +37,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		3D8072D012E915DA00DDD165 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3DE7835212C5F4D90046031C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -75,6 +85,7 @@
 			children = (
 				8DD76FB20486AB0100D96B5E /* judy-arrays */,
 				3DE7835412C5F4D90046031C /* pairs-test */,
+				3D8072D212E915DA00DDD165 /* distance-test */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -83,6 +94,7 @@
 			isa = PBXGroup;
 			children = (
 				3DE7835D12C5F52B0046031C /* pairs-test.c */,
+				3D8072B312E914D700DDD165 /* distance-test.c */,
 			);
 			name = Tests;
 			sourceTree = "<group>";
@@ -98,6 +110,22 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		3D8072D112E915DA00DDD165 /* distance-test */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3D8072E012E9163100DDD165 /* Build configuration list for PBXNativeTarget "distance-test" */;
+			buildPhases = (
+				3D8072CF12E915DA00DDD165 /* Sources */,
+				3D8072D012E915DA00DDD165 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "distance-test";
+			productName = "distance-test";
+			productReference = 3D8072D212E915DA00DDD165 /* distance-test */;
+			productType = "com.apple.product-type.tool";
+		};
 		3DE7835312C5F4D90046031C /* pairs-test */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3DE7835A12C5F4EA0046031C /* Build configuration list for PBXNativeTarget "pairs-test" */;
@@ -153,11 +181,20 @@
 			targets = (
 				8DD76FA90486AB0100D96B5E /* judy-arrays */,
 				3DE7835312C5F4D90046031C /* pairs-test */,
+				3D8072D112E915DA00DDD165 /* distance-test */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		3D8072CF12E915DA00DDD165 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3D8072DD12E9161300DDD165 /* distance-test.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3DE7835112C5F4D90046031C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -232,6 +269,36 @@
 			};
 			name = Release;
 		};
+		3D8072D412E915DC00DDD165 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = /usr/local/bin;
+				PREBINDING = NO;
+				PRODUCT_NAME = "distance-test";
+			};
+			name = Debug;
+		};
+		3D8072D512E915DC00DDD165 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PREBINDING = NO;
+				PRODUCT_NAME = "distance-test";
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 		3DE7835612C5F4DB0046031C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -279,6 +346,15 @@
 			buildConfigurations = (
 				1DEB928A08733DD80010E9CD /* Debug */,
 				1DEB928B08733DD80010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3D8072E012E9163100DDD165 /* Build configuration list for PBXNativeTarget "distance-test" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3D8072D412E915DC00DDD165 /* Debug */,
+				3D8072D512E915DC00DDD165 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
