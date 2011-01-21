@@ -46,7 +46,12 @@ int jxld_smallestInt(int a, int b, int c) {
 void searchRecursive(judyslot *cell, uchar *key_buffer, int key_buffer_size, int key_index, char prevLetter, char thisLetter, const char *word, int columns, int *penultimateRow, int *previousRow, void *results, int maxCost) {
 	
 	int currentRowLastIndex = columns - 1;
+#if __STDC_VERSION__ >= 199901L
 	int currentRow[columns];
+#else
+	int *currentRow = calloc(columns, sizeof(int));
+#endif
+	
 	currentRow[0] = previousRow[0] + 1;
 	
 	int cost;
@@ -131,6 +136,12 @@ void searchRecursive(judyslot *cell, uchar *key_buffer, int key_buffer_size, int
 		}
 		
 	}
+	
+#if __STDC_VERSION__ >= 199901L
+#else
+	free(currentRow);
+#endif
+	
 }
 
 void search(const char *word, unsigned int maxCost) {
@@ -138,13 +149,25 @@ void search(const char *word, unsigned int maxCost) {
 	
 	// build first row
 	int currentRowSize = word_length + 1;
+	
+#if __STDC_VERSION__ >= 199901L
 	int currentRow[currentRowSize];
+#else
+	int *currentRow = calloc(currentRowSize, sizeof(int));
+#endif
+	
 	for (int k = 0; k < currentRowSize; k++) {
 		currentRow[k] = k;
 	}
 	
 	int key_buffer_size = word_length + maxCost + 1;
+
+#if __STDC_VERSION__ >= 199901L
+	uchar key_buffer[key_buffer_size];
+#else
 	uchar *key_buffer = calloc(key_buffer_size, sizeof(uchar));
+#endif
+
 	int key_index = 0;
 	
 	char letter;
@@ -170,7 +193,11 @@ void search(const char *word, unsigned int maxCost) {
 		} while (cell);
 	}
 	
+#if __STDC_VERSION__ >= 199901L
+#else
+	free(currentRow);
 	free(key_buffer);
+#endif
 }
 
 int main(int argc, char **argv) {
