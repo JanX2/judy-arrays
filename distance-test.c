@@ -244,7 +244,7 @@ int main(int argc, char **argv) {
 	
 	while ( fgets((char *)buff, sizeof(buff), in) ) {
 		len = strlen((const char *)buff);
-		if (len) {
+		if (len > 1) {								// We only want lines containing more than just the '\n'
 			buff[len] = 0;							// Remove '\n'
 			len--;
 			if ( len && buff[len - 1] == 0x0d ) {	// Detect and remove Windows CR
