@@ -5,6 +5,7 @@
  *  Created by Jan on 21.01.11.
  *  Copyright 2011 geheimwerk.de. All rights reserved.
  *
+ *  License: same as for judy-arrays.c
  */
 
 #include <stdio.h>
