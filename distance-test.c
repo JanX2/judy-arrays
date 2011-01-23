@@ -30,6 +30,13 @@ void *judy;
 	#warning MIN is already defined, MIN(a, b) may not behave as expected.
 #endif
 
+typedef struct _search_data_struct {
+	uchar *key_buffer;
+	int key_buffer_size;
+	void *results;
+	int maxCost;
+} search_data_struct;
+
 // Return the minimum of a, b and c
 int jxld_smallestInt(int a, int b, int c) {
 	int min = a;
@@ -44,7 +51,7 @@ int jxld_smallestInt(int a, int b, int c) {
 
 // This recursive helper is used by the search function above. It assumes that
 // the previousRow has been filled in already.
-void searchRecursive(judyslot *cell, uchar *key_buffer, int key_buffer_size, int key_index, char prevLetter, char thisLetter, const char *word, int columns, int *penultimateRow, int *previousRow, void *results, int maxCost) {
+void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char prevLetter, char thisLetter, const char *word, int columns, int *penultimateRow, int *previousRow) {
 	
 	int currentRowLastIndex = columns - 1;
 #if __STDC_VERSION__ >= 199901L
@@ -93,15 +100,15 @@ void searchRecursive(judyslot *cell, uchar *key_buffer, int key_buffer_size, int
 	
 	// If the last entry in the row indicates the optimal cost is less than the
 	// maximum cost, and there is a word in this trie cell, then add it.
-	if (currentRow[currentRowLastIndex] <= maxCost && *cell > 0) {
+	if (currentRow[currentRowLastIndex] <= d->maxCost && *cell > 0) {
 		/*[results addObject:[JXTrieResult resultWithWord:(NSString *)node.word 
 											andDistance:currentRow[currentRowLastIndex]]];*/
-		judy_key(judy, key_buffer, key_buffer_size);
+		judy_key(judy, d->key_buffer, d->key_buffer_size);
 		
 		// The distance we calculated is only valid for this word, if the next level down is the end of the word. 
 		// If the word continues the current distance doesn’t reflect that and we need to recurse deeper for the correct value.
-		if (key_buffer[key_index+1] == '\0') {
-			fprintf(out, "('%s', %d)\n", key_buffer, currentRow[currentRowLastIndex]);
+		if (d->key_buffer[key_index+1] == '\0') {
+			fprintf(out, "('%s', %d)\n", d->key_buffer, currentRow[currentRowLastIndex]);
 		}	
 	}
 	
@@ -112,25 +119,25 @@ void searchRecursive(judyslot *cell, uchar *key_buffer, int key_buffer_size, int
 	
 	// If any entries in the row are less than the maximum cost, then 
 	// recursively search each branch of the trie
-	if (currentRowMinCost <= maxCost) {
+	if (currentRowMinCost <= d->maxCost) {
 		char nextLetter;
 		key_index += 1;
 		
-		if (key_index < key_buffer_size) {
+		if (key_index < d->key_buffer_size) {
 			do {
-				judy_key(judy, key_buffer, key_buffer_size);
+				judy_key(judy, d->key_buffer, d->key_buffer_size);
 				
-				if (key_buffer[key_index-1] != thisLetter) {
+				if (d->key_buffer[key_index-1] != thisLetter) {
 					break;
 				}
 				else {
-					nextLetter = key_buffer[key_index];
+					nextLetter = d->key_buffer[key_index];
 					
-					searchRecursive(cell, key_buffer, key_buffer_size, key_index, thisLetter, nextLetter, word, columns, previousRow, currentRow, results, maxCost);
+					searchRecursive(cell, d, key_index, thisLetter, nextLetter, word, columns, previousRow, currentRow);
 					
-					key_buffer[key_index] = nextLetter+1;
+					d->key_buffer[key_index] = nextLetter+1;
 					
-					cell = judy_strt(judy, key_buffer, key_index+1);
+					cell = judy_strt(judy, d->key_buffer, key_index+1);
 				}
 				
 			} while (cell);
@@ -148,7 +155,7 @@ void searchRecursive(judyslot *cell, uchar *key_buffer, int key_buffer_size, int
 void search(const char *word, unsigned int maxCost) {
 	int word_length = strlen(word);
 	
-	// build first row
+	// Build first row
 	int currentRowSize = word_length + 1;
 	
 #if __STDC_VERSION__ >= 199901L
@@ -161,6 +168,7 @@ void search(const char *word, unsigned int maxCost) {
 		currentRow[k] = k;
 	}
 	
+	// Prepare key_buffer
 	int key_buffer_size = word_length + maxCost + 1;
 
 #if __STDC_VERSION__ >= 199901L
@@ -168,7 +176,16 @@ void search(const char *word, unsigned int maxCost) {
 #else
 	uchar *key_buffer = calloc(key_buffer_size, sizeof(uchar));
 #endif
-
+	
+	// Prepare unchanging data struct
+	search_data_struct d;
+	d.key_buffer = key_buffer;
+	d.key_buffer_size = key_buffer_size;
+	//d.word = word;
+	//d.columns = word_length+1;
+	d.results = NULL;
+	d.maxCost = maxCost;
+	
 	int key_index = 0;
 	
 	char letter;
@@ -180,12 +197,12 @@ void search(const char *word, unsigned int maxCost) {
 	}
 	
 	if (cell) {
-		// recursively search each branch of the trie
+		// Recursively search each branch of the trie
 		do {
 			judy_key(judy, key_buffer, key_buffer_size);
 			letter = key_buffer[key_index];
 			
-			searchRecursive(cell, key_buffer, key_buffer_size, key_index, 0, letter, word, word_length+1, NULL, currentRow, NULL, maxCost);
+			searchRecursive(cell, &d/*, key_buffer, key_buffer_size*/, key_index, 0, letter, word, word_length+1, NULL, currentRow/*, NULL, maxCost*/);
 			
 			key_buffer[key_index] = letter+1;
 			
