@@ -35,6 +35,8 @@ typedef struct _search_data_struct {
 	void (*resultCallback)(FILE *out, const char *word, int distance);
 	uchar *key_buffer;
 	int key_buffer_size;
+	const char *word;
+	int columns;
 	void *results;
 	int maxCost;
 } search_data_struct;
@@ -57,7 +59,10 @@ void processResult(FILE *out, const char *word, int distance) {
 
 // This recursive helper is used by the search function below. 
 // It assumes that the previousRow has been filled in already.
-void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char prevLetter, char thisLetter, const char *word, int columns, int *penultimateRow, int *previousRow) {
+void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char prevLetter, char thisLetter, int *penultimateRow, int *previousRow) {
+	
+	const char *word = d->word;
+	int columns = d->columns;
 	
 	int currentRowLastIndex = columns - 1;
 #if __STDC_VERSION__ >= 199901L
@@ -140,7 +145,7 @@ void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char 
 			else {
 				nextLetter = d->key_buffer[key_index];
 				
-				searchRecursive(cell, d, key_index, thisLetter, nextLetter, word, columns, previousRow, currentRow);
+				searchRecursive(cell, d, key_index, thisLetter, nextLetter, previousRow, currentRow);
 				
 				d->key_buffer[key_index] = nextLetter+1;
 				
@@ -188,8 +193,8 @@ void search(const char *word, unsigned int maxCost, void *results, void (*result
 	d.resultCallback = resultCallback;
 	d.key_buffer = key_buffer;
 	d.key_buffer_size = key_buffer_size;
-	//d.word = word;
-	//d.columns = word_length+1;
+	d.word = word;
+	d.columns = word_length+1;
 	d.results = results;
 	d.maxCost = maxCost;
 	
@@ -209,7 +214,7 @@ void search(const char *word, unsigned int maxCost, void *results, void (*result
 			judy_key(judy, key_buffer, key_buffer_size);
 			letter = key_buffer[key_index];
 			
-			searchRecursive(cell, &d, key_index, 0, letter, word, word_length+1, NULL, currentRow);
+			searchRecursive(cell, &d, key_index, 0, letter, NULL, currentRow);
 			
 			key_buffer[key_index] = letter+1;
 			
