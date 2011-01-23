@@ -32,6 +32,7 @@ void *judy;
 #endif
 
 typedef struct _search_data_struct {
+	void (*resultCallback)(FILE *out, const char *word, int distance);
 	uchar *key_buffer;
 	int key_buffer_size;
 	void *results;
@@ -48,6 +49,10 @@ int jxld_smallestInt(int a, int b, int c) {
 		min = c;
 	
 	return min;
+}
+
+void processResult(FILE *out, const char *word, int distance) {
+	fprintf(out, "('%s', %d)\n", word, distance);
 }
 
 // This recursive helper is used by the search function below. 
@@ -109,7 +114,7 @@ void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char 
 		// The distance we calculated is only valid for this word, if the next level down is the end of the word. 
 		// If the word continues, the current distance doesn’t reflect that and we need to recurse deeper for the correct value.
 		if (d->key_buffer[key_index+1] == '\0') {
-			fprintf((FILE *)d->results, "('%s', %d)\n", d->key_buffer, currentRow[currentRowLastIndex]);
+			d->resultCallback((FILE *)d->results, (const char *)d->key_buffer, currentRow[currentRowLastIndex]);
 		}	
 	}
 	
@@ -153,7 +158,7 @@ void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char 
 	
 }
 
-void search(const char *word, unsigned int maxCost, void *results) {
+void search(const char *word, unsigned int maxCost, void *results, void (*resultCallback)(FILE *out, const char *word, int distance)) {
 	int word_length = strlen(word);
 	
 	// Build first row
@@ -180,6 +185,7 @@ void search(const char *word, unsigned int maxCost, void *results) {
 	
 	// Prepare unchanging data struct
 	search_data_struct d;
+	d.resultCallback = resultCallback;
 	d.key_buffer = key_buffer;
 	d.key_buffer_size = key_buffer_size;
 	//d.word = word;
@@ -280,7 +286,7 @@ int main(int argc, char **argv) {
 	fprintf(out, "Read %" PRIjudyvalue " words. \n", max);
 
 #if 1
-	search((const char *)target, maxCost, out);
+	search((const char *)target, maxCost, out, processResult);
 #else
 	judyslot *cell;
 	uint idx;
