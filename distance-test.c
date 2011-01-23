@@ -19,7 +19,6 @@
 #define TARGET		"goober"
 #define MAX_COST	1
 
-FILE *in, *out;
 void *judy;
 
 #ifndef MIN
@@ -110,7 +109,7 @@ void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char 
 		// The distance we calculated is only valid for this word, if the next level down is the end of the word. 
 		// If the word continues, the current distance doesn’t reflect that and we need to recurse deeper for the correct value.
 		if (d->key_buffer[key_index+1] == '\0') {
-			fprintf(out, "('%s', %d)\n", d->key_buffer, currentRow[currentRowLastIndex]);
+			fprintf((FILE *)d->results, "('%s', %d)\n", d->key_buffer, currentRow[currentRowLastIndex]);
 		}	
 	}
 	
@@ -154,7 +153,7 @@ void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char 
 	
 }
 
-void search(const char *word, unsigned int maxCost) {
+void search(const char *word, unsigned int maxCost, void *results) {
 	int word_length = strlen(word);
 	
 	// Build first row
@@ -185,7 +184,7 @@ void search(const char *word, unsigned int maxCost) {
 	d.key_buffer_size = key_buffer_size;
 	//d.word = word;
 	//d.columns = word_length+1;
-	d.results = NULL;
+	d.results = results;
 	d.maxCost = maxCost;
 	
 	int key_index = 0;
@@ -221,6 +220,8 @@ void search(const char *word, unsigned int maxCost) {
 }
 
 int main(int argc, char **argv) {
+	FILE *in, *out;
+
 	const char *target;
 	unsigned int maxCost;
 	const char *dictionary;
@@ -279,7 +280,7 @@ int main(int argc, char **argv) {
 	fprintf(out, "Read %" PRIjudyvalue " words. \n", max);
 
 #if 1
-	search((const char *)target, maxCost);
+	search((const char *)target, maxCost, out);
 #else
 	judyslot *cell;
 	uint idx;
