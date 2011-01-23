@@ -203,7 +203,7 @@ void search(const char *word, unsigned int maxCost, void *results) {
 			judy_key(judy, key_buffer, key_buffer_size);
 			letter = key_buffer[key_index];
 			
-			searchRecursive(cell, &d/*, key_buffer, key_buffer_size*/, key_index, 0, letter, word, word_length+1, NULL, currentRow/*, NULL, maxCost*/);
+			searchRecursive(cell, &d, key_index, 0, letter, word, word_length+1, NULL, currentRow);
 			
 			key_buffer[key_index] = letter+1;
 			
