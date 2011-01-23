@@ -10,6 +10,8 @@
 
 #include <stdio.h>
 #include <strings.h>
+#include <assert.h>
+
 #include "judy-arrays.c"
 
 
@@ -49,8 +51,8 @@ int jxld_smallestInt(int a, int b, int c) {
 	return min;
 }
 
-// This recursive helper is used by the search function above. It assumes that
-// the previousRow has been filled in already.
+// This recursive helper is used by the search function below. 
+// It assumes that the previousRow has been filled in already.
 void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char prevLetter, char thisLetter, const char *word, int columns, int *penultimateRow, int *previousRow) {
 	
 	int currentRowLastIndex = columns - 1;
@@ -106,7 +108,7 @@ void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char 
 		judy_key(judy, d->key_buffer, d->key_buffer_size);
 		
 		// The distance we calculated is only valid for this word, if the next level down is the end of the word. 
-		// If the word continues the current distance doesn’t reflect that and we need to recurse deeper for the correct value.
+		// If the word continues, the current distance doesn’t reflect that and we need to recurse deeper for the correct value.
 		if (d->key_buffer[key_index+1] == '\0') {
 			fprintf(out, "('%s', %d)\n", d->key_buffer, currentRow[currentRowLastIndex]);
 		}	
@@ -123,25 +125,25 @@ void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char 
 		char nextLetter;
 		key_index += 1;
 		
-		if (key_index < d->key_buffer_size) {
-			do {
-				judy_key(judy, d->key_buffer, d->key_buffer_size);
+		assert(key_index < d->key_buffer_size);
+		
+		do {
+			judy_key(judy, d->key_buffer, d->key_buffer_size);
+			
+			if (d->key_buffer[key_index-1] != thisLetter) {
+				break;
+			}
+			else {
+				nextLetter = d->key_buffer[key_index];
 				
-				if (d->key_buffer[key_index-1] != thisLetter) {
-					break;
-				}
-				else {
-					nextLetter = d->key_buffer[key_index];
-					
-					searchRecursive(cell, d, key_index, thisLetter, nextLetter, word, columns, previousRow, currentRow);
-					
-					d->key_buffer[key_index] = nextLetter+1;
-					
-					cell = judy_strt(judy, d->key_buffer, key_index+1);
-				}
+				searchRecursive(cell, d, key_index, thisLetter, nextLetter, word, columns, previousRow, currentRow);
 				
-			} while (cell);
-		}
+				d->key_buffer[key_index] = nextLetter+1;
+				
+				cell = judy_strt(judy, d->key_buffer, key_index+1);
+			}
+			
+		} while (cell);
 		
 	}
 	
