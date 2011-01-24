@@ -427,7 +427,7 @@ uchar *base;
 
 				// is this a leaf?
 
-				if( !(value & JUDY_mask) )
+				if( !(value & 0xFF) )
 					return &node[-slot-1];
 
 				next = node[-slot-1];
