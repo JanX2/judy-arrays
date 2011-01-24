@@ -22,20 +22,23 @@
 //	#warning MIN is already defined, MIN(a, b) may not behave as expected.
 #endif
 
+typedef signed long ldint;
+#define PRIldint	"ld"
+
 typedef struct _search_data_struct {
 	void *judy;
-	void (*resultCallback)(FILE *out, const char *word, int distance);
+	void (*resultCallback)(FILE *out, const char *word, ldint distance);
 	uchar *key_buffer;
 	int key_buffer_size;
 	const char *word;
 	int columns;
 	void *results;
-	int maxCost;
+	ldint maxCost;
 } search_data_struct;
 
 // Return the minimum of a, b and c
-int jxld_smallestInt(int a, int b, int c) {
-	int min = a;
+ldint jxld_smallestLDInt(ldint a, ldint b, ldint c) {
+	ldint min = a;
 	if ( b < min )
 		min = b;
 	
@@ -45,30 +48,30 @@ int jxld_smallestInt(int a, int b, int c) {
 	return min;
 }
 
-void processResult(FILE *out, const char *word, int distance) {
-	fprintf(out, "('%s', %d)\n", word, distance);
+void processResult(FILE *out, const char *word, ldint distance) {
+	fprintf(out, "('%s', %" PRIldint ")\n", word, distance);
 }
 
 // This recursive helper is used by the search function below. 
 // It assumes that the previousRow has been filled in already.
-void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char prevLetter, char thisLetter, int *penultimateRow, int *previousRow) {
+void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char prevLetter, char thisLetter, ldint *penultimateRow, ldint *previousRow) {
 	
 	const char *word = d->word;
 	int columns = d->columns;
 	
 	int currentRowLastIndex = columns - 1;
 #if __STDC_VERSION__ >= 199901L
-	int currentRow[columns];
+	ldint currentRow[columns];
 #else
-	int *currentRow = calloc(columns, sizeof(int));
+	ldint *currentRow = calloc(columns, sizeof(ldint));
 #endif
 	
 	currentRow[0] = previousRow[0] + 1;
 	
-	int cost;
-	int insertCost;
-	int deleteCost;
-	int replaceCost;
+	ldint cost;
+	ldint insertCost;
+	ldint deleteCost;
+	ldint replaceCost;
 	
 	int column;
 	
@@ -87,7 +90,7 @@ void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char 
 		}
 		replaceCost = previousRow[column - 1] + cost;
 		
-		currentRow[column] = jxld_smallestInt(insertCost, deleteCost, replaceCost);
+		currentRow[column] = jxld_smallestLDInt(insertCost, deleteCost, replaceCost);
 		
 #ifndef DISABLE_DAMERAU_TRANSPOSITION
 		// This conditional adds Damerau transposition to the Levenshtein distance
@@ -115,7 +118,7 @@ void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char 
 		}	
 	}
 	
-	int currentRowMinCost = currentRow[0];
+	ldint currentRowMinCost = currentRow[0];
 	for (column = 1; column < columns; column++) {
 		currentRowMinCost = MIN(currentRowMinCost, currentRow[column]);
 	}
@@ -155,16 +158,16 @@ void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char 
 	
 }
 
-void search(void *judy, const char *word, unsigned int maxCost, void *results, void (*resultCallback)(FILE *out, const char *word, int distance)) {
+void search(void *judy, const char *word, ldint maxCost, void *results, void (*resultCallback)(FILE *out, const char *word, ldint distance)) {
 	int word_length = strlen(word);
 	
 	// Build first row
 	int currentRowSize = word_length + 1;
 	
 #if __STDC_VERSION__ >= 199901L
-	int currentRow[currentRowSize];
+	ldint currentRow[currentRowSize];
 #else
-	int *currentRow = calloc(currentRowSize, sizeof(int));
+	ldint *currentRow = calloc(currentRowSize, sizeof(ldint));
 #endif
 	
 	for (int k = 0; k < currentRowSize; k++) {
