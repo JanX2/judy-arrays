@@ -15,7 +15,6 @@
 #include "judy-arrays.c"
 
 
-void *judy;
 
 #ifndef MIN
 	#if defined(__GNUC__) && !defined(__STRICT_ANSI__)
@@ -28,6 +27,7 @@ void *judy;
 #endif
 
 typedef struct _search_data_struct {
+	void *judy;
 	void (*resultCallback)(FILE *out, const char *word, int distance);
 	uchar *key_buffer;
 	int key_buffer_size;
@@ -110,7 +110,7 @@ void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char 
 	if (currentRow[currentRowLastIndex] <= d->maxCost && *cell > 0) {
 		/*[results addObject:[JXTrieResult resultWithWord:(NSString *)node.word 
 											andDistance:currentRow[currentRowLastIndex]]];*/
-		judy_key(judy, d->key_buffer, d->key_buffer_size);
+		judy_key(d->judy, d->key_buffer, d->key_buffer_size);
 		
 		// The distance we calculated is only valid for this word, if the next level down is the end of the word. 
 		// If the word continues, the current distance doesn’t reflect that and we need to recurse deeper for the correct value.
@@ -133,7 +133,7 @@ void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char 
 		assert(key_index < d->key_buffer_size);
 		
 		do {
-			judy_key(judy, d->key_buffer, d->key_buffer_size);
+			judy_key(d->judy, d->key_buffer, d->key_buffer_size);
 			
 			if (d->key_buffer[key_index-1] != thisLetter) {
 				break;
@@ -145,7 +145,7 @@ void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char 
 				
 				d->key_buffer[key_index] = nextLetter+1;
 				
-				cell = judy_strt(judy, d->key_buffer, key_index+1);
+				cell = judy_strt(d->judy, d->key_buffer, key_index+1);
 			}
 			
 		} while (cell);
@@ -159,7 +159,7 @@ void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char 
 	
 }
 
-void search(const char *word, unsigned int maxCost, void *results, void (*resultCallback)(FILE *out, const char *word, int distance)) {
+void search(void *judy, const char *word, unsigned int maxCost, void *results, void (*resultCallback)(FILE *out, const char *word, int distance)) {
 	int word_length = strlen(word);
 	
 	// Build first row
@@ -186,6 +186,7 @@ void search(const char *word, unsigned int maxCost, void *results, void (*result
 	
 	// Prepare unchanging data struct
 	search_data_struct d;
+	d.judy = judy;
 	d.resultCallback = resultCallback;
 	d.key_buffer = key_buffer;
 	d.key_buffer_size = key_buffer_size;
@@ -232,6 +233,7 @@ void search(const char *word, unsigned int maxCost, void *results, void (*result
 #define MAX_COST	1
 
 int main(int argc, char **argv) {
+	void *judy;
 	FILE *in, *out;
 
 	const char *target;
@@ -292,7 +294,7 @@ int main(int argc, char **argv) {
 	fprintf(out, "Read %" PRIjudyvalue " words. \n", max);
 
 #if 1
-	search((const char *)target, maxCost, out, processResult);
+	search(judy, (const char *)target, maxCost, out, processResult);
 #else
 	judyslot *cell;
 	uint idx;
