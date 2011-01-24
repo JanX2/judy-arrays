@@ -34,6 +34,7 @@ typedef struct _search_data_struct {
 #endif
 	uchar *key_buffer;
 	int key_buffer_size;
+	char *current_word;
 	const char *word;
 	int columns;
 	void *results;
@@ -59,6 +60,8 @@ void processResult(FILE *out, const char *word, ldint distance) {
 // This recursive helper is used by the search function below. 
 // It assumes that the previousRow has been filled in already.
 void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char prevLetter, char thisLetter, ldint *penultimateRow, ldint *previousRow) {
+	
+	d->current_word[key_index] = thisLetter;
 	
 	const char *word = d->word;
 	int columns = d->columns;
@@ -158,6 +161,8 @@ void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char 
 	free(currentRow);
 #endif
 	
+	d->current_word[key_index] = '\0';
+	
 }
 
 void search(void *judy, const char *word, ldint maxCost, void *results, void (*resultCallback)(FILE *out, const char *word, ldint distance)) {
@@ -176,6 +181,10 @@ void search(void *judy, const char *word, ldint maxCost, void *results, void (*r
 	int key_buffer_size = word_length + maxCost + 1;
 	uchar *key_buffer = calloc(key_buffer_size, sizeof(uchar));
 	
+	// Prepare current word buffer
+	char *current_word = calloc(key_buffer_size, sizeof(char));
+	memset((void *)current_word, '\0', key_buffer_size);
+	
 	// Prepare unchanging data struct
 	search_data_struct d;
 	d.judy = judy;
@@ -185,6 +194,7 @@ void search(void *judy, const char *word, ldint maxCost, void *results, void (*r
 #endif
 	d.key_buffer = key_buffer;
 	d.key_buffer_size = key_buffer_size;
+	d.current_word = current_word;
 	d.word = word;
 	d.columns = word_length+1;
 	d.results = results;
@@ -215,6 +225,7 @@ void search(void *judy, const char *word, ldint maxCost, void *results, void (*r
 		} while (cell);
 	}
 	
+	free(current_word);
 	free(currentRow);
 	free(key_buffer);
 }
