@@ -111,6 +111,8 @@ void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char 
 #endif
 	}
 	
+	int next_key_index = key_index + 1;
+
 	// If the last entry in the row indicates the optimal cost is less than the
 	// maximum cost, and there is a word in this trie cell, then add it.
 	if (currentRow[currentRowLastIndex] <= d->maxCost && *cell > 0) {
@@ -118,9 +120,9 @@ void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char 
 		
 		// The distance we calculated is only valid for this word, if the next level down is the end of the word. 
 		// If the word continues, the current distance doesn’t reflect that and we need to recurse deeper for the correct value.
-		if (d->key_buffer[key_index+1] == '\0') {
+		if (d->key_buffer[next_key_index] == '\0') {
 			d->resultCallback((FILE *)d->results, (const char *)d->key_buffer, currentRow[currentRowLastIndex]);
-		}	
+		}
 	}
 	
 	ldint currentRowMinCost = currentRow[0];
@@ -132,24 +134,30 @@ void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char 
 	// recursively search each branch of the trie
 	if (currentRowMinCost <= d->maxCost) {
 		char nextLetter;
-		key_index += 1;
 		
-		assert(key_index < d->key_buffer_size);
+		//assert(next_key_index < d->key_buffer_size);
 		
 		do {
 			judy_key(d->judy, d->key_buffer, d->key_buffer_size);
 			
-			if (d->key_buffer[key_index-1] != thisLetter) {
-				break;
+			if (d->key_buffer[key_index] == thisLetter 
+				&& strncmp((const char *)d->current_word, (const char *)d->key_buffer, (size_t)key_index+1) == 0) {
+				
+				nextLetter = d->key_buffer[next_key_index];
+				
+				if (nextLetter != '\0') {
+					searchRecursive(cell, d, next_key_index, thisLetter, nextLetter, previousRow, currentRow);
+				}
+
+				nextLetter += 1;
+				strncpy((char *)d->key_buffer, (const char *)d->current_word, next_key_index);
+				d->key_buffer[next_key_index] = nextLetter;
+				d->key_buffer[next_key_index+1] = '\0';
+				
+				cell = judy_strt(d->judy, d->key_buffer, next_key_index+1);
 			}
 			else {
-				nextLetter = d->key_buffer[key_index];
-				
-				searchRecursive(cell, d, key_index, thisLetter, nextLetter, previousRow, currentRow);
-				
-				d->key_buffer[key_index] = nextLetter+1;
-				
-				cell = judy_strt(d->judy, d->key_buffer, key_index+1);
+				break;
 			}
 			
 		} while (cell);
@@ -220,6 +228,7 @@ void search(void *judy, const char *word, ldint maxCost, void *results, void (*r
 			searchRecursive(cell, &d, key_index, 0, letter, NULL, currentRow);
 			
 			key_buffer[key_index] = letter+1;
+			key_buffer[key_index+1] = '\0';
 			
 			cell = judy_strt(judy, key_buffer, key_index+1);
 			
