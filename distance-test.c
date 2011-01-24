@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 		sscanf(argv[2], "%u", &maxCost);
 	}
 	
-	if (argc >= 3) {
+	if (argc > 3) {
 		dictionary = argv[3];
 	}
 	else {
