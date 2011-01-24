@@ -27,8 +27,8 @@ void *judy;
 	#else
 		#define MIN(A,B)	((A) < (B) ? (A) : (B))
 	#endif
-#else
-	#warning MIN is already defined, MIN(a, b) may not behave as expected.
+//#else
+//	#warning MIN is already defined, MIN(a, b) may not behave as expected.
 #endif
 
 typedef struct _search_data_struct {
