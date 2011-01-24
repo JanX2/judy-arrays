@@ -178,7 +178,7 @@ void search(void *judy, const char *word, ldint maxCost, void *results, void (*r
 	}
 	
 	// Prepare key_buffer
-	int key_buffer_size = word_length + maxCost + 1;
+	int key_buffer_size = word_length + maxCost + 2;
 	uchar *key_buffer = calloc(key_buffer_size, sizeof(uchar));
 	
 	// Prepare current word buffer
