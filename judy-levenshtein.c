@@ -204,6 +204,7 @@ void search(void *judy, const char *word, ldint maxCost, void *results, void (*r
 	
 	char letter;
 	judyslot *cell;
+	
 	cell = judy_strt(judy, NULL, 0);
 	judy_key(judy, key_buffer, key_buffer_size);
 	if (key_buffer[0] == 0) {
