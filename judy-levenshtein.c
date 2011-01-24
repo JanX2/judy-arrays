@@ -11,6 +11,7 @@
 
 #include "judy-arrays.c"
 
+#define DEBUG_KEY_BUFFER	1
 
 #ifndef MIN
 	#if defined(__GNUC__) && !defined(__STRICT_ANSI__)
@@ -28,6 +29,9 @@ typedef signed long ldint;
 typedef struct _search_data_struct {
 	void *judy;
 	void (*resultCallback)(FILE *out, const char *word, ldint distance);
+#if DEBUG_KEY_BUFFER
+	char *key_buffer_char;
+#endif
 	uchar *key_buffer;
 	int key_buffer_size;
 	const char *word;
@@ -176,6 +180,9 @@ void search(void *judy, const char *word, ldint maxCost, void *results, void (*r
 	search_data_struct d;
 	d.judy = judy;
 	d.resultCallback = resultCallback;
+#if DEBUG_KEY_BUFFER
+	d.key_buffer_char = (char *)key_buffer;
+#endif
 	d.key_buffer = key_buffer;
 	d.key_buffer_size = key_buffer_size;
 	d.word = word;
