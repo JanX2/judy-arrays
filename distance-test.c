@@ -105,8 +105,9 @@ int main(int argc, char **argv) {
 			max -= *cell;
 		} while ( (cell = judy_del(judy)) );
 	}
-	
 #endif
+	
 	judy_close(judy);
+	
 	return 0;
 }
