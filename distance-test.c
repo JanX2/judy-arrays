@@ -15,10 +15,6 @@
 #include "judy-arrays.c"
 
 
-#define DICTIONARY	"/usr/share/dict/words"
-#define TARGET		"goober"
-#define MAX_COST	1
-
 void *judy;
 
 #ifndef MIN
@@ -229,6 +225,11 @@ void search(const char *word, unsigned int maxCost, void *results, void (*result
 	free(key_buffer);
 #endif
 }
+
+
+#define DICTIONARY	"/usr/share/dict/words"
+#define TARGET		"goober"
+#define MAX_COST	1
 
 int main(int argc, char **argv) {
 	FILE *in, *out;
