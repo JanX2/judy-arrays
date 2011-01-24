@@ -162,11 +162,7 @@ void search(void *judy, const char *word, ldint maxCost, void *results, void (*r
 	// Build first row
 	int currentRowSize = word_length + 1;
 	
-#if __STDC_VERSION__ >= 199901L
-	ldint currentRow[currentRowSize];
-#else
 	ldint *currentRow = calloc(currentRowSize, sizeof(ldint));
-#endif
 	
 	for (int k = 0; k < currentRowSize; k++) {
 		currentRow[k] = k;
@@ -174,12 +170,7 @@ void search(void *judy, const char *word, ldint maxCost, void *results, void (*r
 	
 	// Prepare key_buffer
 	int key_buffer_size = word_length + maxCost + 1;
-	
-#if __STDC_VERSION__ >= 199901L
-	uchar key_buffer[key_buffer_size];
-#else
 	uchar *key_buffer = calloc(key_buffer_size, sizeof(uchar));
-#endif
 	
 	// Prepare unchanging data struct
 	search_data_struct d;
@@ -217,9 +208,6 @@ void search(void *judy, const char *word, ldint maxCost, void *results, void (*r
 		} while (cell);
 	}
 	
-#if __STDC_VERSION__ >= 199901L
-#else
 	free(currentRow);
 	free(key_buffer);
-#endif
 }
