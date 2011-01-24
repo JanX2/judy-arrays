@@ -107,8 +107,6 @@ void searchRecursive(judyslot *cell, search_data_struct *d, int key_index, char 
 	// If the last entry in the row indicates the optimal cost is less than the
 	// maximum cost, and there is a word in this trie cell, then add it.
 	if (currentRow[currentRowLastIndex] <= d->maxCost && *cell > 0) {
-		/*[results addObject:[JXTrieResult resultWithWord:(NSString *)node.word 
-		 andDistance:currentRow[currentRowLastIndex]]];*/
 		judy_key(d->judy, d->key_buffer, d->key_buffer_size);
 		
 		// The distance we calculated is only valid for this word, if the next level down is the end of the word. 
