@@ -305,6 +305,7 @@ void *block;
 	memset (block, 0, amt);
 	return block;
 }
+
 void judy_free (Judy *judy, void *block, int type)
 {
 	*((void **)(block)) = judy->reuse[type];
@@ -361,7 +362,7 @@ int keysize;
 			continue;
 		}
 	}
-	buff[len] = 0;
+	buff[len] = '\0';
 	return len;
 }
 
@@ -1317,9 +1318,9 @@ uint idx;
 
 	while( fgets((char *)buff, sizeof(buff), in) ) {
 		len = strlen((const char *)buff);
-		buff[--len] = 0;
+		buff[--len] = '\0';
 		if( len && buff[len - 1] == 0x0d ) // Detect and remove Windows CR
-			buff[--len] = 0;
+			buff[--len] = '\0';
 		*(judy_cell (judy, buff, len)) += 1;		// count instances of string
 		max++;
 	}
