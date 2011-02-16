@@ -82,6 +82,16 @@ int main(int argc, char **argv) {
 #if 1
 	search(judy, (const char *)target, maxCost, out, processResult);
 #else
+    #if 1
+    char key_buffer[2];
+	judyslot *cell = NULL;
+	
+	key_buffer[1] = '\0';
+    
+    for (key_buffer[0] = 'A'; key_buffer[0] != 0; key_buffer[0]++) {
+        cell = judy_slot(judy, (uchar *)key_buffer, 1);
+    }
+    #else
 	judyslot *cell;
 	uint idx;
 
@@ -105,6 +115,7 @@ int main(int argc, char **argv) {
 			max -= *cell;
 		} while ( (cell = judy_del(judy)) );
 	}
+    #endif
 #endif
 	
 	judy_close(judy);

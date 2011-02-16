@@ -28,6 +28,7 @@
 
 /* Begin PBXFileReference section */
 		3D10CC0212ED56FB000DE9D4 /* judy-levenshtein.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "judy-levenshtein.c"; sourceTree = "<group>"; };
+		3D2F99B9130302FA006D7433 /* judy-utilities.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "judy-utilities.c"; sourceTree = "<group>"; };
 		3D8072B312E914D700DDD165 /* distance-test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "distance-test.c"; sourceTree = "<group>"; };
 		3D8072D212E915DA00DDD165 /* distance-test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "distance-test"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3DB3623512B379AA0036C0E1 /* judy-arrays.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "judy-arrays.c"; sourceTree = "<group>"; };
@@ -77,6 +78,7 @@
 			isa = PBXGroup;
 			children = (
 				3DB3623512B379AA0036C0E1 /* judy-arrays.c */,
+				3D2F99B9130302FA006D7433 /* judy-utilities.c */,
 				3D10CC0212ED56FB000DE9D4 /* judy-levenshtein.c */,
 			);
 			name = Source;
