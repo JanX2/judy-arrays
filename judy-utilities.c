@@ -17,18 +17,21 @@
 uint judy_key_chars_below_key(Judy *judy, uchar *buff, uint buff_used_size, uint buff_size, uchar *out_array) {
     uint count = 0;
 	int key_index = 0;
-	char thisLetter;
-	char nextLetter;
+	char this_letter;
+	char next_letter;
     judyslot *cell;
 
-	size_t current_word_len = strlen((const char *)buff);
-	char current_word[current_word_len+1];
-	strncpy((char *)&current_word, (const char *)buff, current_word_len);
+	const uchar *orig_buff = buff;
+
+    size_t temp_buff_size = (buff_used_size == 0) ? 1+2 : buff_used_size+2;
+	uchar temp_buff_array[temp_buff_size]; // Allocate on stack
+	uchar *temp_buff = temp_buff_array;
+	memcpy(temp_buff, orig_buff, buff_used_size);
 	
 	if (buff_used_size == 0) {
 		cell = judy_strt(judy, NULL, 0);
-		judy_key(judy, buff, buff_size);
-		if (buff[0] == 0) {
+		judy_key(judy, temp_buff, temp_buff_size);
+		if (temp_buff[0] == 0) {
 			cell = judy_nxt(judy);
 		}
 		
@@ -38,47 +41,49 @@ uint judy_key_chars_below_key(Judy *judy, uchar *buff, uint buff_used_size, uint
 		
 		// Recursively search each branch of the trie
 		do {
-			judy_key(judy, buff, buff_size);
-			nextLetter = buff[key_index];
+			judy_key(judy, temp_buff, temp_buff_size);
+			next_letter = temp_buff[key_index];
 			
-            out_array[count] = nextLetter;
-            count++;
+			if (next_letter != '\0') {
+				out_array[count] = next_letter;
+				count++;
+			}
 			
-			nextLetter += 1;
-			buff[key_index] = nextLetter;
-			buff[key_index+1] = '\0';
+			next_letter += 1;
+			temp_buff[key_index] = next_letter;
+			temp_buff[key_index+1] = '\0';
 			
-			cell = judy_strt(judy, buff, key_index+1);
+			cell = judy_strt(judy, temp_buff, key_index+1);
 			
 		} while (cell);
 	}
 	else {
 		key_index = buff_used_size-1;
-		thisLetter = buff[key_index];
+		this_letter = temp_buff[key_index];
 		int next_key_index = key_index + 1;
 
-		cell = judy_strt(judy, buff, key_index+1);
+		cell = judy_strt(judy, temp_buff, key_index+1);
 		
-		//assert(next_key_index < buff_size);
+		//assert(next_key_index < temp_buff_size);
 		
 		do {
-			judy_key(judy, buff, buff_size);
+			judy_key(judy, temp_buff, temp_buff_size);
 			
-			if (buff[key_index] == thisLetter 
-				&& strncmp((const char *)current_word, (const char *)buff, (size_t)key_index+1) == 0) {
-				nextLetter = buff[next_key_index];
+			if (temp_buff[key_index] == this_letter 
+				&& memcmp(orig_buff, temp_buff, (size_t)key_index+1) == 0) {
+				next_letter = temp_buff[next_key_index];
 				
-				if (nextLetter != '\0') {
-					out_array[count] = nextLetter;
+				if (next_letter != '\0') {
+					out_array[count] = next_letter;
 					count++;
 				}
 
-				nextLetter += 1;
-				strncpy((char *)buff, (const char *)current_word, next_key_index);
-				buff[next_key_index] = nextLetter;
-				buff[next_key_index+1] = '\0';
+				next_letter += 1;
+				memcpy(temp_buff, orig_buff, next_key_index);
+				temp_buff[next_key_index] = next_letter;
+				temp_buff[next_key_index+1] = '\0';
 				
-				cell = judy_strt(judy, buff, next_key_index+1);
+				cell = judy_strt(judy, temp_buff, next_key_index+1);
 			}
 			else {
 				break;
@@ -86,9 +91,6 @@ uint judy_key_chars_below_key(Judy *judy, uchar *buff, uint buff_used_size, uint
 			
 		} while (cell);
 	}
-
-	// Restore word in buff
-	strncpy((char *)buff, (const char *)current_word, current_word_len);
 
 	return count;
 }
