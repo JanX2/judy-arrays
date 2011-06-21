@@ -161,7 +161,7 @@ int main(int argc, char **argv) {
 		printf("%"PRIjudyvalue " %"PRIjudyvalue "\n", index, value);
 
 		cell = judy_nxt(judy);
-#define SYMMETRY_TEST	1
+#define SYMMETRY_TEST	0
 #if SYMMETRY_TEST
 		cell = judy_prv(judy); // This will work if judy_prv() and judy_nxt() are symmetric. 
 		cell = judy_nxt(judy);
