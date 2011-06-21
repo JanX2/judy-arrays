@@ -59,11 +59,13 @@
 void judyvalueNativeToBottomUp(judyvalue index, uchar *buff) {
 	judyvalue *judyvalue_in_buff = (judyvalue *)buff;
 	*judyvalue_in_buff = judyvalueBottomUpBytes(index);
-	buff[BOTTOM_UP_LAST] = 0xFF;
+	
+	uchar *zero_toggles = &(buff[BOTTOM_UP_LAST]);
+	*zero_toggles = 0xFF;
 	
 	for (int i = 0; i < sizeof(judyvalue); i++) {
 		if (buff[i] == 0x00) {
-			buff[BOTTOM_UP_LAST] ^= (0x01 << i);
+			*zero_toggles ^= (0x01 << i);
 			buff[i] = 0x01;
 		}
 	}
@@ -72,12 +74,14 @@ void judyvalueNativeToBottomUp(judyvalue index, uchar *buff) {
 judyvalue judyvalueBottomUpToNative(uchar *buff) {
 	judyvalue index;
 	
-	if (buff[BOTTOM_UP_LAST] == BOTTOM_UP_ALL_ZEROS) {
+	uchar *zero_toggles = &(buff[BOTTOM_UP_LAST]);
+	
+	if (*zero_toggles == BOTTOM_UP_ALL_ZEROS) {
 		return 0;
 	}
-	else if (buff[BOTTOM_UP_LAST] != 0xFF) {
+	else if (*zero_toggles != 0xFF) {
 		for (int i = 0; i < sizeof(judyvalue); i++) {
-			if ((buff[BOTTOM_UP_LAST] & (0x01 << i)) == 0x00) {
+			if ((*zero_toggles & (0x01 << i)) == 0x00) {
 				buff[i] = 0x00;
 			}
 		}
