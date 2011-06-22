@@ -25,10 +25,10 @@
 
 	#if defined (__APPLE__)
 		#include <libkern/OSByteOrder.h>
-		#define judyvalueReverseBytes(A)	OSSwapHostToLittleInt64(A)
+		#define judyvalue_reverse_bytes(A)	OSSwapHostToLittleInt64(A)
 	#elif (BYTE_ORDER == BIG_ENDIAN)
 		#warning "Big endian 64-bit implementation untested."
-		inline judyvalue judyvalueReverseBytes(judyvalue val) {
+		inline judyvalue judyvalue_reverse_bytes(judyvalue val) {
 			return	((val<<56) & 0xFF00000000000000) |
 					((val<<40) & 0x00FF000000000000) |
 					((val<<24) & 0x0000FF0000000000) |
@@ -47,9 +47,9 @@
 
 	#if defined (__APPLE__)
 		#include <libkern/OSByteOrder.h>
-		#define judyvalueReverseBytes(A)	OSSwapHostToLittleInt32(A)
+		#define judyvalue_reverse_bytes(A)	OSSwapHostToLittleInt32(A)
 	#elif (BYTE_ORDER == BIG_ENDIAN)
-		inline judyvalue judyvalueReverseBytes(judyvalue val) {
+		inline judyvalue judyvalue_reverse_bytes(judyvalue val) {
 			return	((val<<24) & 0xFF000000) |
 					((val<< 8) & 0x00FF0000) |
 					((val>> 8) & 0x0000FF00) |
@@ -60,13 +60,13 @@
 #endif
 
 #if (BYTE_ORDER == BIG_ENDIAN)
-	#define judyvalueBottomUpBytes(A)	judyvalueReverseBytes(A)
+	#define judyvalueBottomUpBytes(A)	judyvalue_reverse_bytes(A)
 #else
 	#define judyvalueBottomUpBytes(A)	A
 #endif
 
 
-void judyvalueNativeToBottomUp(judyvalue index, uchar *buff) {
+void judyvalue_native_to_bottom_up(judyvalue index, uchar *buff) {
 	judyvalue *judyvalue_in_buff = (judyvalue *)buff;
 	*judyvalue_in_buff = judyvalueBottomUpBytes(index);
 	
@@ -81,7 +81,7 @@ void judyvalueNativeToBottomUp(judyvalue index, uchar *buff) {
 	}
 }
 
-judyvalue judyvalueBottomUpToNative(uchar *buff) {
+judyvalue judyvalue_bottom_up_to_native(uchar *buff) {
 	judyvalue index;
 	
 	uchar *zero_toggles = &(buff[BOTTOM_UP_LAST]);
@@ -133,8 +133,8 @@ int main(int argc, char **argv) {
 	
 	do {
 		index = test;
-		judyvalueNativeToBottomUp(index, (uchar *)buff);
-		index = judyvalueBottomUpToNative(buff);
+		judyvalue_native_to_bottom_up(index, (uchar *)buff);
+		index = judyvalue_bottom_up_to_native(buff);
 		if (index != test) {
 			printf("Encoding error: %"PRIjudyvalue "\n", test);
 		}
@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
 	
 	while( fgets((char *)buff, sizeof(buff), in) ) {
 		if (sscanf((char *)buff, "%"PRIjudyvalue " %"PRIjudyvalue, &index, &value)) {
-			judyvalueNativeToBottomUp(index, (uchar *)buff);
+			judyvalue_native_to_bottom_up(index, (uchar *)buff);
 			cell = judy_cell(judy, buff, BOTTOM_UP_SIZE);
 			if (value) {
 				*cell = value;                 // store new value
@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
 	while (cell != NULL)
 	{
 		judy_key(judy, (uchar *)buff, sizeof(buff));
-		index = judyvalueBottomUpToNative(buff);
+		index = judyvalue_bottom_up_to_native(buff);
 		
 		value = *cell;
 		if (value == -1) value = 0;
@@ -184,7 +184,7 @@ int main(int argc, char **argv) {
 	while (cell != NULL)
 	{
 		judy_key(judy, (uchar *)buff, sizeof(buff));
-		index = judyvalueBottomUpToNative(buff);
+		index = judyvalue_bottom_up_to_native(buff);
 		
 		value = *cell;
 		if (value == -1) value = 0;
