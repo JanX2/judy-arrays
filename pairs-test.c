@@ -57,6 +57,14 @@ int main(int argc, char **argv) {
 	while( fgets((char *)buff, sizeof(buff), in) ) {
 		if (sscanf((char *)buff, "%"PRIjudyvalue " %"PRIjudyvalue, &index, &value)) {
 			judyvalue_native_to_bottom_up(index, key);
+#define ENABLE_READ_LOGGING	0
+#if ENABLE_READ_LOGGING
+			for (int i = 0; i < BOTTOM_UP_SIZE; i++) {
+				printf("%02x", key[i]);
+			}
+			printf(" ");
+			printf("%"PRIjudyvalue " %"PRIjudyvalue "\n", index, value);
+#endif
 			cell = judy_cell(judy, key, BOTTOM_UP_SIZE);
 			if (value) {
 				*cell = value;                 // store new value
