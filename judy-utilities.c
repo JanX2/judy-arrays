@@ -26,8 +26,8 @@
 
 	#if defined (__APPLE__)
 		#include <libkern/OSByteOrder.h>
-		#define judyvalue_reverse_bytes(A)	OSSwapHostToLittleInt64(A)
-	#elif (BYTE_ORDER == BIG_ENDIAN)
+		#define judyvalue_reverse_bytes(A)	OSSwapHostToBigInt64(A)
+	#elif (BYTE_ORDER != BIG_ENDIAN)
 		#warning "Big endian 64-bit implementation untested."
 		inline judyvalue judyvalue_reverse_bytes(judyvalue val) {
 			return	((val<<56) & 0xFF00000000000000) |
@@ -50,8 +50,8 @@
 
 	#if defined (__APPLE__)
 		#include <libkern/OSByteOrder.h>
-		#define judyvalue_reverse_bytes(A)	OSSwapHostToLittleInt32(A)
-	#elif (BYTE_ORDER == BIG_ENDIAN)
+		#define judyvalue_reverse_bytes(A)	OSSwapHostToBigInt32(A)
+	#elif (BYTE_ORDER != BIG_ENDIAN)
 		inline judyvalue judyvalue_reverse_bytes(judyvalue val) {
 			return	((val<<24) & 0xFF000000) |
 					((val<< 8) & 0x00FF0000) |
@@ -63,9 +63,9 @@
 #endif
 
 #if (BYTE_ORDER == BIG_ENDIAN)
-	#define judyvalue_bottom_up_bytes(A)	judyvalue_reverse_bytes(A)
-#else
 	#define judyvalue_bottom_up_bytes(A)	A
+#else
+	#define judyvalue_bottom_up_bytes(A)	judyvalue_reverse_bytes(A)
 #endif
 
 
@@ -76,9 +76,11 @@ void judyvalue_native_to_bottom_up(judyvalue index, uchar *buff) {
 	uchar *zero_toggles = &(buff[BOTTOM_UP_LAST]);
 	*zero_toggles = 0xFF;
 	
+	int j = sizeof(judyvalue);
 	for (int i = 0; i < sizeof(judyvalue); i++) {
+		j--;
 		if (buff[i] == 0x00) {
-			*zero_toggles ^= (0x01 << i);
+			*zero_toggles ^= (0x01 << j);
 			buff[i] = 0x01;
 		}
 	}
@@ -93,8 +95,10 @@ judyvalue judyvalue_bottom_up_to_native(uchar *buff) {
 		return 0;
 	}
 	else if (*zero_toggles != 0xFF) {
+		int j = sizeof(judyvalue);
 		for (int i = 0; i < sizeof(judyvalue); i++) {
-			if ((*zero_toggles & (0x01 << i)) == 0x00) {
+			j--;
+			if ((*zero_toggles & (0x01 << j)) == 0x00) {
 				buff[i] = 0x00;
 			}
 		}
