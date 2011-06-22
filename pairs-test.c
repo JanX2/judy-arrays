@@ -12,6 +12,7 @@
 
 int main(int argc, char **argv) {
 	uchar buff[1024];
+	uchar key[BOTTOM_UP_SIZE+1] = {0};
 	FILE *in, *out;
 	
 	judyvalue index;					// array index
@@ -42,8 +43,8 @@ int main(int argc, char **argv) {
 	
 	do {
 		index = test;
-		judyvalue_native_to_bottom_up(index, (uchar *)buff);
-		index = judyvalue_bottom_up_to_native(buff);
+		judyvalue_native_to_bottom_up(index, (uchar *)key);
+		index = judyvalue_bottom_up_to_native(key);
 		if (index != test) {
 			printf("Encoding error: %"PRIjudyvalue "\n", test);
 		}
@@ -55,8 +56,8 @@ int main(int argc, char **argv) {
 	
 	while( fgets((char *)buff, sizeof(buff), in) ) {
 		if (sscanf((char *)buff, "%"PRIjudyvalue " %"PRIjudyvalue, &index, &value)) {
-			judyvalue_native_to_bottom_up(index, (uchar *)buff);
-			cell = judy_cell(judy, buff, BOTTOM_UP_SIZE);
+			judyvalue_native_to_bottom_up(index, (uchar *)key);
+			cell = judy_cell(judy, key, BOTTOM_UP_SIZE);
 			if (value) {
 				*cell = value;                 // store new value
 			} else {
@@ -72,8 +73,8 @@ int main(int argc, char **argv) {
 	cell = judy_strt(judy, NULL, 0);
 	while (cell != NULL)
 	{
-		judy_key(judy, (uchar *)buff, sizeof(buff));
-		index = judyvalue_bottom_up_to_native(buff);
+		judy_key(judy, (uchar *)key, sizeof(key));
+		index = judyvalue_bottom_up_to_native(key);
 		
 		value = *cell;
 		if (value == -1) value = 0;
@@ -92,8 +93,8 @@ int main(int argc, char **argv) {
 	cell = judy_end(judy);
 	while (cell != NULL)
 	{
-		judy_key(judy, (uchar *)buff, sizeof(buff));
-		index = judyvalue_bottom_up_to_native(buff);
+		judy_key(judy, (uchar *)key, sizeof(key));
+		index = judyvalue_bottom_up_to_native(key);
 		
 		value = *cell;
 		if (value == -1) value = 0;
