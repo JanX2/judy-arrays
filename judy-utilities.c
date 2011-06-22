@@ -63,15 +63,15 @@
 #endif
 
 #if (BYTE_ORDER == BIG_ENDIAN)
-	#define judyvalueBottomUpBytes(A)	judyvalue_reverse_bytes(A)
+	#define judyvalue_bottom_up_bytes(A)	judyvalue_reverse_bytes(A)
 #else
-	#define judyvalueBottomUpBytes(A)	A
+	#define judyvalue_bottom_up_bytes(A)	A
 #endif
 
 
 void judyvalue_native_to_bottom_up(judyvalue index, uchar *buff) {
 	judyvalue *judyvalue_in_buff = (judyvalue *)buff;
-	*judyvalue_in_buff = judyvalueBottomUpBytes(index);
+	*judyvalue_in_buff = judyvalue_bottom_up_bytes(index);
 	
 	uchar *zero_toggles = &(buff[BOTTOM_UP_LAST]);
 	*zero_toggles = 0xFF;
@@ -100,7 +100,7 @@ judyvalue judyvalue_bottom_up_to_native(uchar *buff) {
 		}
 	}
 	
-	index = judyvalueBottomUpBytes(*((judyvalue *)buff));
+	index = judyvalue_bottom_up_bytes(*((judyvalue *)buff));
 	return index;
 }
 
