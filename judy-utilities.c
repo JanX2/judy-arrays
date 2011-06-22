@@ -22,6 +22,8 @@
 	#define BOTTOM_UP_LAST	8
 	#define BOTTOM_UP_ALL_ZEROS	0x00
 
+	#define BOTTOM_UP_MAX_JUDY_STACK_LEVELS	6
+
 	#if defined (__APPLE__)
 		#include <libkern/OSByteOrder.h>
 		#define judyvalue_reverse_bytes(A)	OSSwapHostToLittleInt64(A)
@@ -43,6 +45,8 @@
 	#define BOTTOM_UP_SIZE	5
 	#define BOTTOM_UP_LAST	4
 	#define BOTTOM_UP_ALL_ZEROS	0xF0
+
+	#define BOTTOM_UP_MAX_JUDY_STACK_LEVELS	3
 
 	#if defined (__APPLE__)
 		#include <libkern/OSByteOrder.h>

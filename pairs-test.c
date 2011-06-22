@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
 	} while (test != 0);
 #endif
 	
-	judy = judy_open(512);
+	judy = judy_open(BOTTOM_UP_MAX_JUDY_STACK_LEVELS);
 	
 	while( fgets((char *)buff, sizeof(buff), in) ) {
 		if (sscanf((char *)buff, "%"PRIjudyvalue " %"PRIjudyvalue, &index, &value)) {
