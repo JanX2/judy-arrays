@@ -23,8 +23,21 @@
 	#define BOTTOM_UP_LAST	8
 	#define BOTTOM_UP_ALL_ZEROS	0x00
 
-	#if (BYTE_ORDER == BIG_ENDIAN)
-		#error "Big endian 64-bit implementation incomplete."
+	#if defined (__APPLE__)
+		#include <libkern/OSByteOrder.h>
+		#define judyvalueReverseBytes(A)	OSSwapHostToLittleInt64(A)
+	#elif (BYTE_ORDER == BIG_ENDIAN)
+		#warning "Big endian 64-bit implementation untested."
+		inline judyvalue judyvalueReverseBytes(judyvalue val) {
+			return	((val<<56) & 0xFF00000000000000) |
+					((val<<40) & 0x00FF000000000000) |
+					((val<<24) & 0x0000FF0000000000) |
+					((val<< 8) & 0x000000FF00000000) |
+					((val>> 8) & 0x00000000FF000000) |
+					((val>>24) & 0x0000000000FF0000) |
+					((val>>40) & 0x000000000000FF00) |
+					((val>>56) & 0x00000000000000FF))
+		}
 	#endif
 
 #else
@@ -32,19 +45,16 @@
 	#define BOTTOM_UP_LAST	4
 	#define BOTTOM_UP_ALL_ZEROS	0xF0
 
-	#if (BYTE_ORDER == BIG_ENDIAN)
-	judyvalue judyvalueReverseBytes(judyvalue in) {
-		char *c_in = (char *)&in;
-		judyvalue out;
-		char *c_out = (char *)&out;
-		
-		c_out[0] = c_in[3];
-		c_out[1] = c_in[2];
-		c_out[2] = c_in[1];
-		c_out[3] = c_in[0];
-		
-		return out;
-	}
+	#if defined (__APPLE__)
+		#include <libkern/OSByteOrder.h>
+		#define judyvalueReverseBytes(A)	OSSwapHostToLittleInt32(A)
+	#elif (BYTE_ORDER == BIG_ENDIAN)
+		inline judyvalue judyvalueReverseBytes(judyvalue val) {
+			return	((val<<24) & 0xFF000000) |
+					((val<< 8) & 0x00FF0000) |
+					((val>> 8) & 0x0000FF00) |
+					((val>>24) & 0x000000FF);
+		}
 	#endif
 
 #endif
