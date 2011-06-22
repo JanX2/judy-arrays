@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
 	
 	do {
 		index = test;
-		judyvalue_native_to_bottom_up(index, (uchar *)key);
+		judyvalue_native_to_bottom_up(index, key);
 		index = judyvalue_bottom_up_to_native(key);
 		if (index != test) {
 			printf("Encoding error: %"PRIjudyvalue "\n", test);
@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
 	
 	while( fgets((char *)buff, sizeof(buff), in) ) {
 		if (sscanf((char *)buff, "%"PRIjudyvalue " %"PRIjudyvalue, &index, &value)) {
-			judyvalue_native_to_bottom_up(index, (uchar *)key);
+			judyvalue_native_to_bottom_up(index, key);
 			cell = judy_cell(judy, key, BOTTOM_UP_SIZE);
 			if (value) {
 				*cell = value;                 // store new value
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
 	cell = judy_strt(judy, NULL, 0);
 	while (cell != NULL)
 	{
-		judy_key(judy, (uchar *)key, sizeof(key));
+		judy_key(judy, key, sizeof(key));
 		index = judyvalue_bottom_up_to_native(key);
 		
 		value = *cell;
@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
 	cell = judy_end(judy);
 	while (cell != NULL)
 	{
-		judy_key(judy, (uchar *)key, sizeof(key));
+		judy_key(judy, key, sizeof(key));
 		index = judyvalue_bottom_up_to_native(key);
 		
 		value = *cell;
